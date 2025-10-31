@@ -956,7 +956,18 @@ class AjaxHandler {
             wp_send_json_error(['message' => 'Nie znaleziono zamówienia'], 404);
         }
 
-        wp_send_json_success(['values' => $values]);
+        // Parse serialized data for better preview
+        $parsed_values = [];
+        foreach ($values as $key => $value) {
+            $parsed = \WooExporter\Export\MetaScanner::parse_for_preview((string)$value);
+            $parsed_values[$key] = [
+                'raw' => $value,
+                'is_serialized' => $parsed['is_serialized'],
+                'display' => $parsed['display']
+            ];
+        }
+
+        wp_send_json_success(['values' => $parsed_values]);
     }
 }
 

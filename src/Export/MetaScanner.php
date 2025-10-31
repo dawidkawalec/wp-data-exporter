@@ -194,6 +194,49 @@ class MetaScanner {
     }
 
     /**
+     * Parse serialized data for preview
+     *
+     * @param string $value Raw value
+     * @return array Parsed info [is_serialized, parsed_data, display]
+     */
+    public static function parse_for_preview(string $value): array {
+        // Check if serialized
+        $unserialized = @unserialize($value);
+        
+        if ($unserialized === false || !is_array($unserialized)) {
+            return [
+                'is_serialized' => false,
+                'parsed_data' => null,
+                'display' => $value
+            ];
+        }
+
+        // It's serialized - create human-readable display
+        $items = [];
+        
+        foreach ($unserialized as $key => $item) {
+            if (is_array($item)) {
+                // Format like: Zgoda marketingowa: TAK (status=1)
+                if (isset($item['name']) && isset($item['status'])) {
+                    $status_text = $item['status'] == '1' ? 'TAK' : 'NIE';
+                    $items[] = $item['name'] . ': ' . $status_text;
+                } else {
+                    // Generic array display
+                    $items[] = json_encode($item, JSON_UNESCAPED_UNICODE);
+                }
+            } else {
+                $items[] = $key . ': ' . $item;
+            }
+        }
+
+        return [
+            'is_serialized' => true,
+            'parsed_data' => $unserialized,
+            'display' => implode(' | ', $items)
+        ];
+    }
+
+    /**
      * Get human-readable label for meta key
      *
      * @param string $meta_key Meta key

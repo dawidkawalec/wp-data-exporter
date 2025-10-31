@@ -225,13 +225,30 @@
                 const $previewDiv = $item.find('.field-preview-value');
                 
                 if (values.hasOwnProperty(field)) {
-                    let value = values[field];
-                    if (!value || value === '') {
-                        $previewDiv.html('<span style="color: #ccc;">(pusta wartość)</span>');
+                    const valueData = values[field];
+                    
+                    // Check if it's our parsed format
+                    if (typeof valueData === 'object' && valueData.display !== undefined) {
+                        if (!valueData.display || valueData.display === '') {
+                            $previewDiv.html('<span style="color: #ccc;">(pusta wartość)</span>');
+                        } else if (valueData.is_serialized) {
+                            // Serialized data - show with icon
+                            const displayValue = valueData.display.length > 100 ? valueData.display.substring(0, 100) + '...' : valueData.display;
+                            $previewDiv.html('<strong style="color: #2271b1;">📦 Dane:</strong> ' + TemplateBuilder.escapeHtml(displayValue));
+                        } else {
+                            // Regular data
+                            const displayValue = valueData.display.length > 80 ? valueData.display.substring(0, 80) + '...' : valueData.display;
+                            $previewDiv.html('<strong style="color: #646970;">Przykład:</strong> ' + TemplateBuilder.escapeHtml(displayValue));
+                        }
                     } else {
-                        // Truncate long values
-                        const displayValue = value.length > 80 ? value.substring(0, 80) + '...' : value;
-                        $previewDiv.html('<strong style="color: #646970;">Przykład:</strong> ' + TemplateBuilder.escapeHtml(displayValue));
+                        // Fallback for old format
+                        const value = typeof valueData === 'object' ? valueData.raw : valueData;
+                        if (!value || value === '') {
+                            $previewDiv.html('<span style="color: #ccc;">(pusta wartość)</span>');
+                        } else {
+                            const displayValue = value.length > 80 ? value.substring(0, 80) + '...' : value;
+                            $previewDiv.html('<strong style="color: #646970;">Przykład:</strong> ' + TemplateBuilder.escapeHtml(displayValue));
+                        }
                     }
                 } else {
                     $previewDiv.html('<span style="color: #ccc;">(brak danych)</span>');
