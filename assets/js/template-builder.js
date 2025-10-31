@@ -4,20 +4,29 @@
 
 (function($) {
     'use strict';
+    
+    console.log('template-builder.js loaded!');
+    console.log('jQuery available:', typeof $ !== 'undefined');
+    console.log('templateBuilderData:', typeof templateBuilderData !== 'undefined' ? templateBuilderData : 'NOT DEFINED');
 
     const TemplateBuilder = {
         selectedFields: [],
         fieldAliases: {},
         
         init: function() {
+            console.log('TemplateBuilder.init() called');
+            
             // Load existing template data if editing
-            if (templateBuilderData.existingTemplate) {
+            if (typeof templateBuilderData !== 'undefined' && templateBuilderData.existingTemplate) {
                 this.selectedFields = templateBuilderData.existingTemplate.selected_fields || [];
                 this.fieldAliases = templateBuilderData.existingTemplate.field_aliases || {};
+                console.log('Loaded existing template:', this.selectedFields.length, 'fields');
             }
             
             this.bindEvents();
             this.updateSelectedList();
+            
+            console.log('TemplateBuilder initialized successfully');
         },
 
         bindEvents: function() {
