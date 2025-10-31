@@ -35,7 +35,6 @@ class AjaxHandler {
         add_action('wp_ajax_delete_schedule', [$this, 'delete_schedule']);
         add_action('wp_ajax_toggle_schedule', [$this, 'toggle_schedule']);
         add_action('wp_ajax_get_schedule', [$this, 'get_schedule']);
-        add_action('wp_ajax_get_schedule_history', [$this, 'get_schedule_history']);
     }
 
     /**
@@ -713,29 +712,6 @@ class AjaxHandler {
         }
 
         wp_send_json_success(['schedule' => $schedule]);
-    }
-
-    /**
-     * Get schedule history (jobs created from this schedule)
-     */
-    public function get_schedule_history(): void {
-        if (!check_ajax_referer('woo_exporter_nonce', 'nonce', false)) {
-            wp_send_json_error(['message' => __('Nieprawidłowy token.', 'woo-data-exporter')], 403);
-        }
-
-        if (!current_user_can('manage_woocommerce')) {
-            wp_send_json_error(['message' => __('Brak uprawnień.', 'woo-data-exporter')], 403);
-        }
-
-        $schedule_id = isset($_POST['schedule_id']) ? absint($_POST['schedule_id']) : 0;
-        
-        if (!$schedule_id) {
-            wp_send_json_error(['message' => __('Nieprawidłowe ID.', 'woo-data-exporter')], 400);
-        }
-
-        $jobs = Job::get_by_schedule($schedule_id, 20);
-
-        wp_send_json_success(['jobs' => $jobs]);
     }
 
     /**
