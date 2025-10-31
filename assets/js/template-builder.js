@@ -234,37 +234,30 @@
         },
 
         /**
-         * Render preview table - shows ALL fields
+         * Render preview - inline under each field
          */
         renderPreviewTable: function(data) {
             const values = data.values || {};
             
-            let html = '<table class="wp-list-table widefat striped">';
-            html += '<thead><tr>';
-            html += '<th style="width: 40px;">✓</th>';
-            html += '<th style="width: 35%;">Meta Key</th>';
-            html += '<th style="width: 65%;">Przykładowa wartość</th>';
-            html += '</tr></thead>';
-            html += '<tbody>';
-            
-            // Show ALL values from order
-            for (const [field, value] of Object.entries(values)) {
-                const isSelected = this.selectedFields.includes(field);
-                const displayValue = value ? (value.length > 150 ? value.substring(0, 150) + '...' : value) : '(pusta)';
+            // Update each field with its preview value
+            $('.field-item').each(function() {
+                const $item = $(this);
+                const field = $item.data('field');
+                const $previewDiv = $item.find('.field-preview-value');
                 
-                html += '<tr' + (isSelected ? ' style="background: #e7f3ff;"' : '') + '>';
-                html += '<td style="text-align: center;">';
-                html += isSelected ? '<span style="color: #00a32a;">✓</span>' : '';
-                html += '</td>';
-                html += '<td><code style="font-size: 11px;">' + this.escapeHtml(field) + '</code></td>';
-                html += '<td style="color: #646970; font-size: 12px;">' + this.escapeHtml(displayValue) + '</td>';
-                html += '</tr>';
-            }
-            
-            html += '</tbody></table>';
-            html += '<p style="margin-top: 10px; color: #646970; font-size: 12px;">✓ = Pole wybrane do eksportu | Zaznacz pola z lewej strony aby dodać do szablonu</p>';
-            
-            $('#preview-table-container').html(html);
+                if (values.hasOwnProperty(field)) {
+                    let value = values[field];
+                    if (!value || value === '') {
+                        $previewDiv.html('<span style="color: #ccc;">(pusta wartość)</span>');
+                    } else {
+                        // Truncate long values
+                        const displayValue = value.length > 80 ? value.substring(0, 80) + '...' : value;
+                        $previewDiv.html('<strong style="color: #646970;">Przykład:</strong> ' + TemplateBuilder.escapeHtml(displayValue));
+                    }
+                } else {
+                    $previewDiv.html('<span style="color: #ccc;">(brak danych)</span>');
+                }
+            });
         },
 
         /**
@@ -281,6 +274,9 @@
          */
         handleSubmit: function(e) {
             e.preventDefault();
+            
+            console.log('handleSubmit called');
+            console.log('Selected fields:', this.selectedFields);
             
             if (this.selectedFields.length === 0) {
                 alert('Wybierz przynajmniej jedno pole!');
@@ -301,11 +297,14 @@
                 field_order: JSON.stringify(this.selectedFields)
             };
             
+            console.log('Saving template:', formData);
+            
             $.ajax({
                 url: wooExporterAdmin.ajax_url,
                 type: 'POST',
                 data: formData,
                 success: function(response) {
+                    console.log('Save response:', response);
                     if (response.success) {
                         alert('✅ ' + response.data.message);
                         window.location.href = 'admin.php?page=woo-data-exporter&tab=templates';
@@ -313,8 +312,9 @@
                         alert('❌ ' + (response.data.message || 'Błąd zapisu'));
                     }
                 },
-                error: function() {
-                    alert('Błąd połączenia');
+                error: function(xhr, status, error) {
+                    console.error('Save error:', xhr.responseText);
+                    alert('Błąd: ' + xhr.status + ' - Sprawdź console');
                 }
             });
         }

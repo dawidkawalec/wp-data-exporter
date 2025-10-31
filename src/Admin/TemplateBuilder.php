@@ -112,16 +112,37 @@ class TemplateBuilder {
                     </table>
                 </div>
 
+                <!-- Preview Selector at top -->
+                <div style="background: #f0f6fc; border: 1px solid #c3dafe; padding: 15px; margin-bottom: 20px;">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <label><strong><?php esc_html_e('Podgląd zamówienia ID:', 'woo-data-exporter'); ?></strong></label>
+                        <input type="number" id="preview-order-id" value="<?php echo esc_attr($current_order_id); ?>" 
+                               style="width: 120px; text-align: center;" placeholder="ID">
+                        <button type="button" id="load-order-preview" class="button button-secondary">
+                            <span class="dashicons dashicons-search"></span>
+                            <?php esc_html_e('Załaduj', 'woo-data-exporter'); ?>
+                        </button>
+                        <span id="preview-status" style="margin-left: 10px;"></span>
+                    </div>
+                    <p style="margin: 10px 0 0 0; font-size: 12px; color: #646970;">
+                        <?php esc_html_e('Szybki wybór:', 'woo-data-exporter'); ?>
+                        <?php foreach (array_slice($sample_orders, 0, 5) as $sample_id): ?>
+                            <a href="#" class="quick-preview-link" data-order-id="<?php echo esc_attr($sample_id); ?>" 
+                               style="margin-right: 10px;"><?php echo esc_html($sample_id); ?></a>
+                        <?php endforeach; ?>
+                    </p>
+                </div>
+
                 <div class="template-field-picker" style="background: #fff; padding: 20px; margin-bottom: 20px; border: 1px solid #ccd0d4;">
-                    <h2 style="margin-top: 0;"><?php esc_html_e('Wybierz pola do eksportu', 'woo-data-exporter'); ?></h2>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h2 style="margin: 0;"><?php esc_html_e('Wybierz pola do eksportu', 'woo-data-exporter'); ?></h2>
+                        <input type="text" id="field-search" class="regular-text" placeholder="🔍 Szukaj pola..." style="width: 300px;">
+                    </div>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                        <!-- Left: Available Fields -->
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+                        <!-- Left: Available Fields with inline preview -->
                         <div class="available-fields-panel">
-                            <h3><?php esc_html_e('Dostępne pola', 'woo-data-exporter'); ?></h3>
-                            <input type="text" id="field-search" class="regular-text" placeholder="🔍 Szukaj pola..." style="width: 100%; margin-bottom: 15px;">
-                            
-                            <div class="fields-list" style="max-height: 500px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;">
+                            <div class="fields-list" style="max-height: 600px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;">
                                 <?php foreach ($grouped_fields as $category => $fields): ?>
                                     <div class="field-group" data-category="<?php echo esc_attr($category); ?>">
                                         <h4 style="margin: 10px 0; color: #2271b1; cursor: pointer;" class="field-group-toggle">
@@ -131,12 +152,18 @@ class TemplateBuilder {
                                         </h4>
                                         <div class="field-group-items" style="margin-left: 20px;">
                                             <?php foreach ($fields as $field): ?>
-                                                <label class="field-item" style="display: block; padding: 5px 0; cursor: pointer;" data-field="<?php echo esc_attr($field); ?>">
-                                                    <input type="checkbox" class="field-checkbox" value="<?php echo esc_attr($field); ?>" 
-                                                           <?php echo ($template && in_array($field, $template->selected_fields)) ? 'checked' : ''; ?>>
-                                                    <code style="font-size: 12px;"><?php echo esc_html($field); ?></code>
-                                                    <span style="color: #646970; font-size: 11px;">— <?php echo esc_html(MetaScanner::get_field_label($field)); ?></span>
-                                                </label>
+                                                <div class="field-item" data-field="<?php echo esc_attr($field); ?>" 
+                                                     style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;">
+                                                    <label style="display: block; cursor: pointer;">
+                                                        <input type="checkbox" class="field-checkbox" value="<?php echo esc_attr($field); ?>" 
+                                                               <?php echo ($template && in_array($field, $template->selected_fields)) ? 'checked' : ''; ?>>
+                                                        <code style="font-size: 12px; font-weight: 600;"><?php echo esc_html($field); ?></code>
+                                                        <span style="color: #646970; font-size: 11px;">— <?php echo esc_html(MetaScanner::get_field_label($field)); ?></span>
+                                                    </label>
+                                                    <div class="field-preview-value" style="margin-left: 24px; margin-top: 4px; font-size: 11px; color: #999; font-style: italic;">
+                                                        <?php esc_html_e('Ładowanie...', 'woo-data-exporter'); ?>
+                                                    </div>
+                                                </div>
                                             <?php endforeach; ?>
                                         </div>
                                     </div>
@@ -147,45 +174,15 @@ class TemplateBuilder {
                         <!-- Right: Selected Fields + Aliases -->
                         <div class="selected-fields-panel">
                             <h3><?php esc_html_e('Wybrane kolumny', 'woo-data-exporter'); ?> (<span id="selected-count">0</span>)</h3>
-                            <p class="description"><?php esc_html_e('Kliknij pole aby ustawić alias (nazwę kolumny w CSV)', 'woo-data-exporter'); ?></p>
+                            <p class="description"><?php esc_html_e('Kliknij aby zmienić alias', 'woo-data-exporter'); ?></p>
                             
                             <div id="selected-fields-list" class="selected-fields-list" style="min-height: 200px; border: 1px solid #ddd; padding: 10px; background: #f9f9f9;">
                                 <p class="no-fields-selected" style="color: #646970; text-align: center; padding: 40px 0;">
-                                    <?php esc_html_e('Zaznacz pola z lewej strony', 'woo-data-exporter'); ?>
+                                    <?php esc_html_e('Zaznacz pola', 'woo-data-exporter'); ?>
                                 </p>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <div class="template-preview-panel" style="background: #fff; padding: 20px; margin-bottom: 20px; border: 1px solid #ccd0d4;">
-                    <h2 style="margin-top: 0;"><?php esc_html_e('Podgląd wartości', 'woo-data-exporter'); ?></h2>
-                    
-                    <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
-                        <label><?php esc_html_e('Zamówienie ID:', 'woo-data-exporter'); ?></label>
-                        <input type="number" id="preview-order-id" value="<?php echo esc_attr($current_order_id); ?>" 
-                               style="width: 120px; text-align: center;" placeholder="Wpisz ID">
-                        <button type="button" id="load-order-preview" class="button button-secondary">
-                            <span class="dashicons dashicons-search"></span>
-                            <?php esc_html_e('Załaduj Podgląd', 'woo-data-exporter'); ?>
-                        </button>
-                        <span id="preview-status" style="margin-left: 10px; color: #646970;"></span>
-                    </div>
-                    <p class="description" style="margin-top: -10px; margin-bottom: 15px;">
-                        <?php esc_html_e('Przykładowe ID zamówień:', 'woo-data-exporter'); ?>
-                        <?php foreach (array_slice($sample_orders, 0, 5) as $sample_id): ?>
-                            <a href="#" class="quick-preview-link" data-order-id="<?php echo esc_attr($sample_id); ?>" 
-                               style="margin-right: 10px;"><?php echo esc_html($sample_id); ?></a>
-                        <?php endforeach; ?>
-                    </p>
-
-                    <div id="preview-table-container" style="overflow-x: auto; max-height: 400px; overflow-y: auto; border: 1px solid #ddd;">
-                        <p style="text-align: center; color: #646970; padding: 40px;">
-                            <?php esc_html_e('Kliknij "Załaduj" aby zobaczyć wszystkie dostępne pola z przykładowego zamówienia', 'woo-data-exporter'); ?>
-                        </p>
-                    </div>
-                    
-                    <input type="hidden" id="available-orders" value="<?php echo esc_attr(implode(',', $sample_orders)); ?>">
                 </div>
 
                 <p class="submit">
