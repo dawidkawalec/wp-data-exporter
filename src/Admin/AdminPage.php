@@ -846,13 +846,43 @@ class AdminPage {
         </div>
         
         <style>
+        .woo-exporter-tab-about {
+            line-height: 1.6;
+        }
+        
+        .woo-exporter-tab-about p,
+        .woo-exporter-tab-about li {
+            line-height: 1.6 !important;
+        }
+        
+        @media (max-width: 1024px) {
+            .about-grid {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .woo-exporter-tab-about ul {
+                columns: 1 !important;
+            }
+        }
+        
         @media (max-width: 782px) {
             .about-grid {
                 grid-template-columns: 1fr !important;
+            }
+            
+            .woo-exporter-tab-about [style*="grid-template-columns: repeat(4"] {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 10px !important;
+            }
+            
+            .woo-exporter-tab-about [style*="font-size: 36px"] {
+                font-size: 24px !important;
             }
         }
         </style>
         <?php
     }
 }
+
+
 
