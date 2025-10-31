@@ -216,7 +216,15 @@ class AdminPage {
             : Job::get_by_requester($current_user_id, 50);
         ?>
         <div class="woo-exporter-tab-history">
-            <h2><?php esc_html_e('Historia Eksportów', 'woo-data-exporter'); ?></h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0;"><?php esc_html_e('Historia Eksportów', 'woo-data-exporter'); ?></h2>
+                <?php if (current_user_can('manage_options')): ?>
+                    <button type="button" id="run-cron-manually" class="button">
+                        <span class="dashicons dashicons-update"></span>
+                        <?php esc_html_e('Uruchom Cron Ręcznie', 'woo-data-exporter'); ?>
+                    </button>
+                <?php endif; ?>
+            </div>
 
             <!-- CSV Preview Modal -->
             <div id="csv-preview-modal" class="csv-preview-modal" style="display: none;">

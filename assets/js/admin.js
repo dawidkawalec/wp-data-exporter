@@ -21,6 +21,7 @@
             $(document).on('click', '.delete-export-btn', this.handleDelete.bind(this));
             $(document).on('click', '.preview-export-btn', this.handlePreview.bind(this));
             $(document).on('click', '.csv-preview-close', this.closePreviewModal.bind(this));
+            $(document).on('click', '#run-cron-manually', this.handleRunCron.bind(this));
             $(document).on('click', '.csv-preview-modal', function(e) {
                 if ($(e.target).hasClass('csv-preview-modal')) {
                     WooExporter.closePreviewModal();
@@ -261,6 +262,44 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        },
+
+        /**
+         * Handle run cron manually
+         */
+        handleRunCron: function(e) {
+            e.preventDefault();
+            
+            const $btn = $(e.currentTarget);
+            const originalHtml = $btn.html();
+            
+            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update dashicons-spin"></span> Uruchamiam...');
+
+            $.ajax({
+                url: wooExporterAdmin.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'run_cron_manually',
+                    nonce: wooExporterAdmin.nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('✅ ' + response.data.message + '\n\nOdśwież stronę za chwilę, aby zobaczyć zmiany.');
+                        
+                        // Reload page after 2 seconds
+                        setTimeout(function() {
+                            location.reload();
+                        }, 2000);
+                    } else {
+                        alert('Błąd: ' + (response.data.message || 'Nie udało się uruchomić crona.'));
+                        $btn.prop('disabled', false).html(originalHtml);
+                    }
+                },
+                error: function() {
+                    alert('Błąd połączenia. Spróbuj ponownie.');
+                    $btn.prop('disabled', false).html(originalHtml);
+                }
+            });
         },
 
         /**

@@ -27,6 +27,7 @@ class AjaxHandler {
         add_action('wp_ajax_cancel_export_job', [$this, 'cancel_export_job']);
         add_action('wp_ajax_delete_export_job', [$this, 'delete_export_job']);
         add_action('wp_ajax_preview_export_csv', [$this, 'preview_export_csv']);
+        add_action('wp_ajax_run_cron_manually', [$this, 'run_cron_manually']);
     }
 
     /**
@@ -474,6 +475,33 @@ class AjaxHandler {
         }
 
         return false;
+    }
+
+    /**
+     * Run cron manually (admin only)
+     */
+    public function run_cron_manually(): void {
+        // Verify nonce
+        if (!check_ajax_referer('woo_exporter_nonce', 'nonce', false)) {
+            wp_send_json_error([
+                'message' => __('Nieprawidłowy token bezpieczeństwa.', 'woo-data-exporter')
+            ], 403);
+        }
+
+        // Only admins can run cron manually
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error([
+                'message' => __('Tylko administratorzy mogą uruchamiać cron ręcznie.', 'woo-data-exporter')
+            ], 403);
+        }
+
+        // Run the cron
+        error_log('WOO_EXPORTER: Manual cron trigger by user #' . get_current_user_id());
+        do_action('woo_exporter_process_jobs');
+
+        wp_send_json_success([
+            'message' => __('Cron został uruchomiony. Sprawdź logi w wp-content/debug.log', 'woo-data-exporter')
+        ]);
     }
 
     /**

@@ -41,23 +41,33 @@ class ExportWorker {
      * Process pending jobs (called by WP Cron)
      */
     public function process_pending_jobs(): void {
+        error_log('WOO_EXPORTER: Cron worker started at ' . current_time('mysql'));
+        
         $start_time = time();
 
         // Get pending jobs (limit to prevent overload)
         $pending_jobs = Job::get_by_status(Job::STATUS_PENDING, 5);
 
         if (empty($pending_jobs)) {
+            error_log('WOO_EXPORTER: No pending jobs found');
             return;
         }
 
+        error_log('WOO_EXPORTER: Found ' . count($pending_jobs) . ' pending job(s)');
+
         foreach ($pending_jobs as $job) {
+            error_log('WOO_EXPORTER: Processing job #' . $job->id . ' (' . $job->job_type . ')');
+            
             // Check execution time limit
             if ((time() - $start_time) > self::MAX_EXECUTION_TIME) {
+                error_log('WOO_EXPORTER: Max execution time reached, stopping');
                 break;
             }
 
             $this->process_job($job);
         }
+        
+        error_log('WOO_EXPORTER: Cron worker finished');
     }
 
     /**
@@ -66,28 +76,38 @@ class ExportWorker {
      * @param object $job Job object
      */
     private function process_job(object $job): void {
+        error_log('WOO_EXPORTER: Job #' . $job->id . ' - Updating status to processing');
+        
         // Update status to processing
         Job::update_status($job->id, Job::STATUS_PROCESSING);
 
         try {
             // Get total count
+            error_log('WOO_EXPORTER: Job #' . $job->id . ' - Getting total count');
             $total_count = $this->get_total_count($job->job_type, $job->filters ?? []);
+            error_log('WOO_EXPORTER: Job #' . $job->id . ' - Total items: ' . $total_count);
             Job::update_progress($job->id, 0, $total_count);
 
             // Initialize CSV generator
+            error_log('WOO_EXPORTER: Job #' . $job->id . ' - Initializing CSV generator');
             $csv_generator = new CsvGenerator($job->job_type);
             
             $offset = 0;
             $processed = 0;
 
             // Process in batches
+            error_log('WOO_EXPORTER: Job #' . $job->id . ' - Starting batch processing');
             while ($offset < $total_count) {
+                error_log('WOO_EXPORTER: Job #' . $job->id . ' - Fetching batch at offset ' . $offset);
                 $batch_data = $this->get_batch_data($job->job_type, $job->filters ?? [], $offset, self::BATCH_SIZE);
                 
                 if (empty($batch_data)) {
+                    error_log('WOO_EXPORTER: Job #' . $job->id . ' - Empty batch, stopping');
                     break;
                 }
 
+                error_log('WOO_EXPORTER: Job #' . $job->id . ' - Processing ' . count($batch_data) . ' items');
+                
                 // Sanitize and write batch
                 $sanitized_data = CsvGenerator::sanitize_export_data($batch_data);
                 $success = $csv_generator->write_batch($sanitized_data);
@@ -107,16 +127,22 @@ class ExportWorker {
             }
 
             // Close CSV file
+            error_log('WOO_EXPORTER: Job #' . $job->id . ' - Closing CSV file');
             $csv_generator->close();
 
             // Update job as completed
+            error_log('WOO_EXPORTER: Job #' . $job->id . ' - Marking as completed. Processed: ' . $processed . ' items');
             Job::update_status($job->id, Job::STATUS_COMPLETED, [
                 'file_path' => $csv_generator->get_file_path(),
                 'processed_items' => $processed
             ]);
 
-            // Send email notification
-            $this->send_completion_email($job, $csv_generator->get_file_path());
+            // Send email notification (optional - may fail if emails are disabled)
+            try {
+                $this->send_completion_email($job, $csv_generator->get_file_path());
+            } catch (\Exception $email_error) {
+                error_log('Export job #' . $job->id . ' completed but email failed: ' . $email_error->getMessage());
+            }
 
         } catch (\Exception $e) {
             // Mark job as failed
@@ -125,10 +151,15 @@ class ExportWorker {
             ]);
 
             // Log error
-            error_log('Export job #' . $job->id . ' failed: ' . $e->getMessage());
+            error_log('WOO_EXPORTER ERROR - Job #' . $job->id . ' failed: ' . $e->getMessage());
+            error_log('WOO_EXPORTER ERROR - Stack trace: ' . $e->getTraceAsString());
 
-            // Send failure email
-            $this->send_failure_email($job, $e->getMessage());
+            // Try to send failure email (optional)
+            try {
+                $this->send_failure_email($job, $e->getMessage());
+            } catch (\Exception $email_error) {
+                error_log('WOO_EXPORTER ERROR - Failed to send failure email: ' . $email_error->getMessage());
+            }
         }
     }
 
