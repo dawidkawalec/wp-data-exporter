@@ -83,8 +83,9 @@ class Plugin {
             new Admin\AjaxHandler();
         }
 
-        // Initialize cron worker
+        // Initialize cron workers
         new Cron\ExportWorker();
+        new Cron\ScheduleWorker();
         
         // Initialize download handler
         new Download\FileHandler();
@@ -126,9 +127,13 @@ class Plugin {
             file_put_contents($upload_dir . '.htaccess', 'deny from all');
         }
 
-        // Schedule cron event
+        // Schedule cron events
         if (!wp_next_scheduled('woo_exporter_process_jobs')) {
             wp_schedule_event(time(), 'every_five_minutes', 'woo_exporter_process_jobs');
+        }
+        
+        if (!wp_next_scheduled('woo_exporter_check_schedules')) {
+            wp_schedule_event(time(), 'hourly', 'woo_exporter_check_schedules');
         }
     }
 
@@ -136,10 +141,15 @@ class Plugin {
      * Plugin deactivation
      */
     public function deactivate(): void {
-        // Unschedule cron event
+        // Unschedule cron events
         $timestamp = wp_next_scheduled('woo_exporter_process_jobs');
         if ($timestamp) {
             wp_unschedule_event($timestamp, 'woo_exporter_process_jobs');
+        }
+        
+        $timestamp_schedules = wp_next_scheduled('woo_exporter_check_schedules');
+        if ($timestamp_schedules) {
+            wp_unschedule_event($timestamp_schedules, 'woo_exporter_check_schedules');
         }
     }
 }

@@ -158,6 +158,34 @@ class Job {
     }
 
     /**
+     * Get jobs by schedule
+     *
+     * @param int $schedule_id Schedule ID
+     * @param int $limit Maximum number of jobs
+     * @return array Array of job objects
+     */
+    public static function get_by_schedule(int $schedule_id, int $limit = 50): array {
+        global $wpdb;
+        $table_name = Schema::get_table_name();
+
+        $jobs = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT * FROM {$table_name} WHERE schedule_id = %d ORDER BY created_at DESC LIMIT %d",
+                $schedule_id,
+                $limit
+            )
+        );
+
+        foreach ($jobs as $job) {
+            if ($job->filters) {
+                $job->filters = json_decode($job->filters, true);
+            }
+        }
+
+        return $jobs;
+    }
+
+    /**
      * Update job status
      *
      * @param int $job_id Job ID

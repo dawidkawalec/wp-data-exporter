@@ -27,6 +27,16 @@
                     WooExporter.closePreviewModal();
                 }
             });
+
+            // Schedule events
+            $(document).on('click', '#add-new-schedule', this.openScheduleModal.bind(this));
+            $(document).on('click', '.edit-schedule-btn', this.editSchedule.bind(this));
+            $(document).on('click', '.delete-schedule-btn', this.deleteSchedule.bind(this));
+            $(document).on('click', '.toggle-schedule-btn', this.toggleSchedule.bind(this));
+            $(document).on('click', '.view-schedule-history-btn', this.viewScheduleHistory.bind(this));
+            $(document).on('click', '.schedule-modal-close', this.closeScheduleModal.bind(this));
+            $(document).on('submit', '#schedule-form', this.handleScheduleFormSubmit.bind(this));
+            $(document).on('change', '#schedule_frequency_type', this.updateFrequencyField.bind(this));
         },
 
         /**
@@ -347,6 +357,272 @@
                     $btn.prop('disabled', false).html(originalHtml);
                 }
             });
+        },
+
+        /**
+         * Open schedule modal (new or edit)
+         */
+        openScheduleModal: function(scheduleId) {
+            const $modal = $('#schedule-form-modal');
+            const $form = $('#schedule-form');
+            
+            $form[0].reset();
+            $('#schedule_id').val('');
+            $('#schedule-modal-title').text('Nowy Harmonogram');
+            
+            if (scheduleId) {
+                // Load schedule data for editing
+                $('#schedule-modal-title').text('Edytuj Harmonogram');
+                this.loadScheduleData(scheduleId);
+            } else {
+                // Set default date to today
+                $('#schedule_start_date').val(new Date().toISOString().split('T')[0]);
+            }
+            
+            this.updateFrequencyField();
+            $modal.fadeIn();
+        },
+
+        /**
+         * Close schedule modal
+         */
+        closeScheduleModal: function() {
+            $('#schedule-form-modal').fadeOut();
+        },
+
+        /**
+         * Load schedule data for editing
+         */
+        loadScheduleData: function(scheduleId) {
+            $.ajax({
+                url: wooExporterAdmin.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'get_schedule',
+                    nonce: wooExporterAdmin.nonce,
+                    schedule_id: scheduleId
+                },
+                success: function(response) {
+                    if (response.success) {
+                        const s = response.data.schedule;
+                        $('#schedule_id').val(s.id);
+                        $('#schedule_name').val(s.name);
+                        $('#schedule_job_type').val(s.job_type);
+                        $('#schedule_frequency_type').val(s.frequency_type);
+                        $('#schedule_frequency_value').val(s.frequency_value);
+                        $('#schedule_start_date').val(s.start_date);
+                        $('#schedule_email').val(s.notification_email);
+                        WooExporter.updateFrequencyField();
+                    }
+                }
+            });
+        },
+
+        /**
+         * Update frequency field labels based on type
+         */
+        updateFrequencyField: function() {
+            const type = $('#schedule_frequency_type').val();
+            const $label = $('#frequency_value_label');
+            const $desc = $('#frequency_value_desc');
+            const $input = $('#schedule_frequency_value');
+
+            switch(type) {
+                case 'daily':
+                    $label.text('Co ile dni *');
+                    $desc.text('1 = codziennie, 7 = co tydzień, 14 = co 2 tygodnie');
+                    $input.attr({min: 1, max: 365, value: 7});
+                    break;
+                case 'weekly':
+                    $label.text('Dzień tygodnia *');
+                    $desc.text('1=Poniedziałek, 2=Wtorek, 3=Środa, 4=Czwartek, 5=Piątek, 6=Sobota, 7=Niedziela');
+                    $input.attr({min: 1, max: 7, value: 1});
+                    break;
+                case 'monthly':
+                    $label.text('Dzień miesiąca *');
+                    $desc.text('1-31 (jeśli miesiąc ma mniej dni, użyje ostatniego dnia)');
+                    $input.attr({min: 1, max: 31, value: 1});
+                    break;
+            }
+        },
+
+        /**
+         * Handle schedule form submit
+         */
+        handleScheduleFormSubmit: function(e) {
+            e.preventDefault();
+            
+            const $form = $(e.target);
+            const scheduleId = $('#schedule_id').val();
+            const action = scheduleId ? 'update_schedule' : 'create_schedule';
+            
+            const formData = {
+                action: action,
+                nonce: wooExporterAdmin.nonce,
+                schedule_id: scheduleId,
+                name: $('#schedule_name').val(),
+                job_type: $('#schedule_job_type').val(),
+                frequency_type: $('#schedule_frequency_type').val(),
+                frequency_value: $('#schedule_frequency_value').val(),
+                start_date: $('#schedule_start_date').val(),
+                notification_email: $('#schedule_email').val()
+            };
+
+            $.ajax({
+                url: wooExporterAdmin.ajax_url,
+                type: 'POST',
+                data: formData,
+                success: function(response) {
+                    if (response.success) {
+                        alert('✅ ' + response.data.message);
+                        WooExporter.closeScheduleModal();
+                        location.reload();
+                    } else {
+                        alert('❌ ' + (response.data.message || 'Błąd zapisu.'));
+                    }
+                },
+                error: function() {
+                    alert('Błąd połączenia.');
+                }
+            });
+        },
+
+        /**
+         * Edit schedule
+         */
+        editSchedule: function(e) {
+            const scheduleId = $(e.currentTarget).data('schedule-id');
+            WooExporter.openScheduleModal(scheduleId);
+        },
+
+        /**
+         * Delete schedule
+         */
+        deleteSchedule: function(e) {
+            const $btn = $(e.currentTarget);
+            const scheduleId = $btn.data('schedule-id');
+            
+            if (!confirm('Czy na pewno chcesz usunąć ten harmonogram? Nie wpłynie to na już wygenerowane eksporty.')) {
+                return;
+            }
+
+            $.ajax({
+                url: wooExporterAdmin.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'delete_schedule',
+                    nonce: wooExporterAdmin.nonce,
+                    schedule_id: scheduleId
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $btn.closest('tr').fadeOut(400, function() { $(this).remove(); });
+                    } else {
+                        alert('Błąd: ' + (response.data.message || 'Nie udało się usunąć.'));
+                    }
+                }
+            });
+        },
+
+        /**
+         * Toggle schedule (pause/resume)
+         */
+        toggleSchedule: function(e) {
+            const $btn = $(e.currentTarget);
+            const scheduleId = $btn.data('schedule-id');
+            const currentActive = $btn.data('active') == 1;
+            const newActive = !currentActive;
+
+            $.ajax({
+                url: wooExporterAdmin.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'toggle_schedule',
+                    nonce: wooExporterAdmin.nonce,
+                    schedule_id: scheduleId,
+                    is_active: newActive ? 1 : 0
+                },
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert('Błąd: ' + (response.data.message || 'Nie udało się zmienić statusu.'));
+                    }
+                }
+            });
+        },
+
+        /**
+         * View schedule history
+         */
+        viewScheduleHistory: function(e) {
+            const scheduleId = $(e.currentTarget).data('schedule-id');
+            
+            $.ajax({
+                url: wooExporterAdmin.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'get_schedule_history',
+                    nonce: wooExporterAdmin.nonce,
+                    schedule_id: scheduleId
+                },
+                success: function(response) {
+                    if (response.success) {
+                        WooExporter.showScheduleHistory(response.data.jobs);
+                    } else {
+                        alert('Błąd: ' + (response.data.message || 'Nie udało się pobrać historii.'));
+                    }
+                }
+            });
+        },
+
+        /**
+         * Show schedule history in modal
+         */
+        showScheduleHistory: function(jobs) {
+            let html = '<div class="schedule-history-modal">';
+            html += '<h3>Historia Raportów</h3>';
+            
+            if (jobs.length === 0) {
+                html += '<p>Brak wygenerowanych raportów dla tego harmonogramu.</p>';
+            } else {
+                html += '<table class="wp-list-table widefat striped" style="margin-top: 15px;">';
+                html += '<thead><tr><th>Data utworzenia</th><th>Status</th><th>Rekordów</th><th>Akcje</th></tr></thead><tbody>';
+                
+                jobs.forEach(function(job) {
+                    html += '<tr>';
+                    html += '<td>' + job.created_at + '</td>';
+                    html += '<td>' + WooExporter.getStatusBadge(job.status) + '</td>';
+                    html += '<td>' + (job.processed_items || 0) + '</td>';
+                    html += '<td>';
+                    if (job.status === 'completed' && job.file_url_hash) {
+                        const downloadUrl = wooExporterAdmin.ajax_url + '?action=woo_exporter_download&job_id=' + job.id + '&hash=' + job.file_url_hash;
+                        html += '<a href="' + downloadUrl + '" class="button button-small">Pobierz</a>';
+                    }
+                    html += '</td>';
+                    html += '</tr>';
+                });
+                
+                html += '</tbody></table>';
+            }
+            
+            html += '<p style="text-align: center; margin-top: 20px;"><button type="button" class="button" onclick="$(this).closest(\'.schedule-history-modal\').remove();">Zamknij</button></p>';
+            html += '</div>';
+            
+            $('body').append(html);
+        },
+
+        /**
+         * Get status badge HTML
+         */
+        getStatusBadge: function(status) {
+            const badges = {
+                'pending': '<span class="status-badge status-pending">Oczekujące</span>',
+                'processing': '<span class="status-badge status-processing">Przetwarzanie</span>',
+                'completed': '<span class="status-badge status-completed">Ukończone</span>',
+                'failed': '<span class="status-badge status-failed">Błąd</span>'
+            };
+            return badges[status] || status;
         },
 
         /**

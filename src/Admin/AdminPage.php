@@ -103,12 +103,18 @@ class AdminPage {
                    class="nav-tab <?php echo $active_tab === 'history' ? 'nav-tab-active' : ''; ?>">
                     <?php esc_html_e('Historia Eksportów', 'woo-data-exporter'); ?>
                 </a>
+                <a href="?page=<?php echo esc_attr(self::PAGE_SLUG); ?>&tab=schedules" 
+                   class="nav-tab <?php echo $active_tab === 'schedules' ? 'nav-tab-active' : ''; ?>">
+                    <?php esc_html_e('Zaplanowane Raporty', 'woo-data-exporter'); ?>
+                </a>
             </nav>
 
             <div class="tab-content">
                 <?php
                 if ($active_tab === 'new-export') {
                     $this->render_new_export_tab();
+                } elseif ($active_tab === 'schedules') {
+                    $this->render_schedules_tab();
                 } else {
                     $this->render_history_tab();
                 }
@@ -403,6 +409,158 @@ class AdminPage {
         );
 
         return implode(' ', $actions);
+    }
+
+    /**
+     * Render schedules tab
+     */
+    private function render_schedules_tab(): void {
+        $schedules = \WooExporter\Database\Schedule::get_all();
+        ?>
+        <div class="woo-exporter-tab-schedules">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0;"><?php esc_html_e('Zaplanowane Raporty', 'woo-data-exporter'); ?></h2>
+                <button type="button" id="add-new-schedule" class="button button-primary">
+                    <span class="dashicons dashicons-plus-alt"></span>
+                    <?php esc_html_e('Dodaj Nowy Harmonogram', 'woo-data-exporter'); ?>
+                </button>
+            </div>
+
+            <?php if (empty($schedules)): ?>
+                <div class="no-schedules" style="background: #fff; padding: 40px; text-align: center; border: 1px solid #ccd0d4;">
+                    <p style="color: #646970; font-size: 14px; margin: 0;">
+                        <?php esc_html_e('Brak zaplanowanych raportów. Kliknij "Dodaj Nowy Harmonogram" aby utworzyć pierwszy.', 'woo-data-exporter'); ?>
+                    </p>
+                </div>
+            <?php else: ?>
+                <table class="wp-list-table widefat fixed striped">
+                    <thead>
+                        <tr>
+                            <th><?php esc_html_e('Nazwa', 'woo-data-exporter'); ?></th>
+                            <th><?php esc_html_e('Typ', 'woo-data-exporter'); ?></th>
+                            <th><?php esc_html_e('Częstotliwość', 'woo-data-exporter'); ?></th>
+                            <th><?php esc_html_e('Email', 'woo-data-exporter'); ?></th>
+                            <th><?php esc_html_e('Następne uruchomienie', 'woo-data-exporter'); ?></th>
+                            <th><?php esc_html_e('Status', 'woo-data-exporter'); ?></th>
+                            <th><?php esc_html_e('Akcje', 'woo-data-exporter'); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($schedules as $schedule): ?>
+                            <tr data-schedule-id="<?php echo esc_attr($schedule->id); ?>">
+                                <td><strong><?php echo esc_html($schedule->name); ?></strong></td>
+                                <td><?php echo esc_html($this->get_job_type_label($schedule->job_type)); ?></td>
+                                <td><?php echo esc_html(\WooExporter\Database\Schedule::get_frequency_description($schedule)); ?></td>
+                                <td><?php echo esc_html($schedule->notification_email); ?></td>
+                                <td>
+                                    <?php 
+                                    echo esc_html(date_i18n(
+                                        get_option('date_format') . ' ' . get_option('time_format'), 
+                                        strtotime($schedule->next_run_date)
+                                    )); 
+                                    ?>
+                                </td>
+                                <td>
+                                    <?php if ($schedule->is_active): ?>
+                                        <span class="status-badge status-completed"><?php esc_html_e('Aktywny', 'woo-data-exporter'); ?></span>
+                                    <?php else: ?>
+                                        <span class="status-badge status-pending"><?php esc_html_e('Zapauzowany', 'woo-data-exporter'); ?></span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <button type="button" class="button button-small view-schedule-history-btn" data-schedule-id="<?php echo esc_attr($schedule->id); ?>" title="<?php esc_attr_e('Zobacz historię raportów', 'woo-data-exporter'); ?>">
+                                        <span class="dashicons dashicons-list-view"></span>
+                                    </button>
+                                    <button type="button" class="button button-small edit-schedule-btn" data-schedule-id="<?php echo esc_attr($schedule->id); ?>">
+                                        <?php esc_html_e('Edytuj', 'woo-data-exporter'); ?>
+                                    </button>
+                                    <button type="button" class="button button-small toggle-schedule-btn" data-schedule-id="<?php echo esc_attr($schedule->id); ?>" data-active="<?php echo esc_attr($schedule->is_active); ?>">
+                                        <?php echo $schedule->is_active ? esc_html__('Pauza', 'woo-data-exporter') : esc_html__('Wznów', 'woo-data-exporter'); ?>
+                                    </button>
+                                    <button type="button" class="button button-small button-link-delete delete-schedule-btn" data-schedule-id="<?php echo esc_attr($schedule->id); ?>">
+                                        <?php esc_html_e('Usuń', 'woo-data-exporter'); ?>
+                                    </button>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
+
+            <!-- Schedule Form Modal -->
+            <div id="schedule-form-modal" class="csv-preview-modal" style="display: none;">
+                <div class="csv-preview-modal-content" style="max-width: 700px;">
+                    <div class="csv-preview-header">
+                        <h3 id="schedule-modal-title"><?php esc_html_e('Nowy Harmonogram', 'woo-data-exporter'); ?></h3>
+                        <button type="button" class="csv-preview-close schedule-modal-close">&times;</button>
+                    </div>
+                    <div class="csv-preview-body" style="max-height: none; padding: 30px;">
+                        <form id="schedule-form">
+                            <input type="hidden" id="schedule_id" name="schedule_id" value="">
+                            
+                            <table class="form-table">
+                                <tr>
+                                    <th><label for="schedule_name"><?php esc_html_e('Nazwa harmonogramu', 'woo-data-exporter'); ?> *</label></th>
+                                    <td>
+                                        <input type="text" id="schedule_name" name="name" class="regular-text" required 
+                                               placeholder="np. Raport tygodniowy" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th><label for="schedule_job_type"><?php esc_html_e('Typ eksportu', 'woo-data-exporter'); ?> *</label></th>
+                                    <td>
+                                        <select id="schedule_job_type" name="job_type" class="regular-text" required>
+                                            <option value="marketing_export"><?php esc_html_e('Marketing', 'woo-data-exporter'); ?></option>
+                                            <option value="analytics_export"><?php esc_html_e('Analityka', 'woo-data-exporter'); ?></option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th><label for="schedule_frequency_type"><?php esc_html_e('Częstotliwość', 'woo-data-exporter'); ?> *</label></th>
+                                    <td>
+                                        <select id="schedule_frequency_type" name="frequency_type" class="regular-text" required>
+                                            <option value="daily"><?php esc_html_e('Codziennie / Co X dni', 'woo-data-exporter'); ?></option>
+                                            <option value="weekly"><?php esc_html_e('Co tydzień (określony dzień)', 'woo-data-exporter'); ?></option>
+                                            <option value="monthly"><?php esc_html_e('Co miesiąc (określony dzień)', 'woo-data-exporter'); ?></option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr id="frequency_value_row">
+                                    <th><label for="schedule_frequency_value" id="frequency_value_label"><?php esc_html_e('Co ile dni', 'woo-data-exporter'); ?> *</label></th>
+                                    <td>
+                                        <input type="number" id="schedule_frequency_value" name="frequency_value" min="1" max="31" value="1" required />
+                                        <p class="description" id="frequency_value_desc"><?php esc_html_e('1 = codziennie, 7 = co tydzień', 'woo-data-exporter'); ?></p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th><label for="schedule_start_date"><?php esc_html_e('Data rozpoczęcia', 'woo-data-exporter'); ?> *</label></th>
+                                    <td>
+                                        <input type="date" id="schedule_start_date" name="start_date" class="regular-text" required />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th><label for="schedule_email"><?php esc_html_e('Email powiadomienia', 'woo-data-exporter'); ?> *</label></th>
+                                    <td>
+                                        <input type="text" id="schedule_email" name="notification_email" class="regular-text" required 
+                                               placeholder="email@example.com, drugi@email.pl" />
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p class="submit" style="padding: 0; margin-top: 20px;">
+                                <button type="submit" class="button button-primary button-large">
+                                    <?php esc_html_e('Zapisz Harmonogram', 'woo-data-exporter'); ?>
+                                </button>
+                                <button type="button" class="button button-large schedule-modal-close">
+                                    <?php esc_html_e('Anuluj', 'woo-data-exporter'); ?>
+                                </button>
+                            </p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
     }
 }
 

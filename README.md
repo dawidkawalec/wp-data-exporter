@@ -9,9 +9,16 @@ Zaawansowana wtyczka WordPress do eksportu danych WooCommerce z przetwarzaniem w
 - **Dwa Typy Eksportu**:
   - **Marketing**: Agregowane dane klientów (jeden wiersz per email)
   - **Analityka**: Szczegółowe dane zamówień (jeden wiersz per produkt)
+- **Custom Email Notifications**: Wysyłka powiadomień na dowolne adresy email (wiele odbiorców)
+- **Cykliczne Raporty**: Automatyczne generowanie raportów według harmonogramu
+  - Co X dni (codziennie, co tydzień, co 2 tygodnie, etc.)
+  - Co tydzień w określony dzień (poniedziałek, wtorek, etc.)
+  - Co miesiąc w określony dzień (1., 15., ostatni dzień, etc.)
+- **Zarządzanie Harmonogramami**: Edycja, pauza, wznowienie, usuwanie
+- **Historia Harmonogramów**: Zobacz wszystkie raporty wygenerowane z danego harmonogramu
+- **Podgląd CSV z Paginacją**: Przeglądaj dane bezpośrednio w panelu (100 wierszy/strona)
 - **Bezpieczne Pobieranie**: Pliki chronione hashem i kontrolą uprawnień
-- **Email Notifications**: Automatyczne powiadomienia po zakończeniu eksportu
-- **Historia Eksportów**: Przegląd wszystkich wygenerowanych eksportów
+- **Historia Eksportów**: Przegląd wszystkich wygenerowanych eksportów z opcją usuwania
 
 ## 📋 Wymagania
 
@@ -90,84 +97,92 @@ Po aktywacji wtyczka automatycznie:
 
 **Zastosowanie:** Analiza sprzedaży, raporty produktowe, analiza kohort
 
-## ⚠️ WAŻNE: Konfiguracja Zgody Marketingowej
+## ✅ Konfiguracja Zgody Marketingowej - ROZWIĄZANE
 
-**BLOKER:** Pole `zgoda_marketingowa` obecnie zawiera placeholder `'TODO_FIND_MARKETING_CONSENT'`.
+Pole `zgoda_marketingowa` jest automatycznie parsowane z `_additional_terms` (WooCommerce Checkout Manager).
 
-### Jak znaleźć lokalizację pola:
+### Jak to działa:
 
-1. **Sprawdź wp_postmeta** (meta zamówienia):
-```sql
-SELECT meta_key, meta_value 
-FROM wp_postmeta 
-WHERE post_id IN (SELECT ID FROM wp_posts WHERE post_type = 'shop_order' LIMIT 5)
-AND meta_key LIKE '%zgoda%' OR meta_key LIKE '%consent%' OR meta_key LIKE '%marketing%';
-```
+1. Wtyczka pobiera pole `_additional_terms` z `wp_postmeta`
+2. To pole zawiera PHP serialized array z checkboxami z checkout
+3. Funkcja `parse_consent_field()` automatycznie:
+   - Deserializuje dane
+   - Znajduje checkbox o nazwie "Zgoda marketingowa" / "consent" / "marketing"
+   - Zwraca "tak" (zaznaczone) lub "nie" (odznaczone)
 
-2. **Sprawdź wp_usermeta** (meta użytkownika):
-```sql
-SELECT meta_key, meta_value 
-FROM wp_usermeta 
-WHERE meta_key LIKE '%zgoda%' OR meta_key LIKE '%consent%' OR meta_key LIKE '%marketing%';
-```
+### Jeśli używasz innej wtyczki:
 
-3. **Sprawdź niestandardowe tabele** innych wtyczek
+Użyj narzędzia diagnostycznego: `/wp-content/plugins/data-exporter/debug-meta-keys.php`
 
-### Jak zaktualizować kod:
-
-Po znalezieniu właściwego `meta_key`, edytuj plik:
-`src/Export/DataQuery.php`
-
-**Jeśli to `wp_postmeta`:**
-```php
-// Znajdź linię 43 i 142 i zamień:
-'TODO_FIND_MARKETING_CONSENT' as zgoda_marketingowa
-
-// Na:
-pm_consent.meta_value as zgoda_marketingowa
-
-// Dodaj JOIN przed WHERE:
-LEFT JOIN {$wpdb->postmeta} pm_consent ON p.ID = pm_consent.post_id 
-    AND pm_consent.meta_key = 'TWOJ_META_KEY'
-```
-
-**Jeśli to `wp_usermeta`:**
-```php
-// Zamień na:
-um_consent.meta_value as zgoda_marketingowa
-
-// Dodaj JOIN:
-LEFT JOIN {$wpdb->usermeta} um_consent ON pm_customer_id.meta_value = um_consent.user_id 
-    AND um_consent.meta_key = 'TWOJ_META_KEY'
-```
+1. Otwórz w przeglądarce jako admin
+2. Szukaj: `zgoda`, `consent`, `marketing`
+3. Znajdź właściwy `meta_key`
+4. Edytuj `src/Export/DataQuery.php` linia ~60 i ~209:
+   ```php
+   LEFT JOIN {$wpdb->postmeta} pm_consent ON p.ID = pm_consent.post_id 
+       AND pm_consent.meta_key = 'TWOJ_META_KEY'
+   ```
 
 ## 🔧 Użycie
 
-### Tworzenie Eksportu
+### Tworzenie Jednorazowego Eksportu
 
-1. Przejdź do **Eksport Danych** w menu WordPress Admin
+1. Przejdź do **Eksport Danych** → **Nowy Eksport**
 2. Wybierz **Typ Eksportu** (Marketing lub Analityka)
 3. Opcjonalnie ustaw filtry dat
-4. Kliknij **Generuj Eksport**
-5. Otrzymasz email z linkiem do pobrania po zakończeniu
+4. **NOWOŚĆ:** Opcjonalnie podaj email(e) do powiadomienia (oddzielone przecinkami)
+5. Kliknij **Generuj Eksport**
+6. Otrzymasz email z linkiem do pobrania po zakończeniu
+
+### Zaplanowane Raporty (Cykliczne)
+
+1. Przejdź do **Eksport Danych** → **Zaplanowane Raporty**
+2. Kliknij **+ Dodaj Nowy Harmonogram**
+3. Wypełnij formularz:
+   - **Nazwa**: np. "Raport tygodniowy Marketing"
+   - **Typ eksportu**: Marketing lub Analityka
+   - **Częstotliwość**:
+     - **Codziennie / Co X dni**: np. 7 = co tydzień, 14 = co 2 tygodnie
+     - **Co tydzień**: wybierz dzień tygodnia (1=Pon, 7=Nie)
+     - **Co miesiąc**: wybierz dzień miesiąca (1-31)
+   - **Data rozpoczęcia**: Kiedy zacząć
+   - **Email powiadomienia**: Gdzie wysyłać raporty (wiele adresów OK)
+4. Kliknij **Zapisz Harmonogram**
+5. Harmonogram będzie automatycznie generował eksporty!
+
+### Zarządzanie Harmonogramami
+
+- **Edytuj**: Zmień ustawienia harmonogramu
+- **Pauza/Wznów**: Tymczasowo zatrzymaj lub wznów harmonogram
+- **📊 Ikona**: Zobacz historię wszystkich raportów wygenerowanych z tego harmonogramu
+- **Usuń**: Usuń harmonogram (nie wpłynie na już wygenerowane pliki)
 
 ### Historia Eksportów
 
 1. Przejdź do zakładki **Historia Eksportów**
 2. Zobacz status wszystkich swoich eksportów
-3. Pobierz ukończone pliki
+3. **Podgląd**: Przeglądaj CSV w przeglądarce (100 wierszy/strona, paginacja)
+4. **Pobierz**: Ściągnij plik CSV
+5. **Usuń**: Usuń stary eksport
+6. **Uruchom Cron Ręcznie**: (tylko admin) Natychmiastowe przetworzenie pending jobów
 
 ### Ręczne Uruchomienie Cron
 
-Jeśli WP Cron nie działa automatycznie:
+**Opcja 1: Przycisk w panelu (zalecane)**
+- Przejdź do zakładki "Historia Eksportów"
+- Kliknij **"Uruchom Cron Ręcznie"** (tylko dla adminów)
+- Automatyczne przetwarzanie wszystkich pending jobów
 
+**Opcja 2: WP-CLI**
 ```bash
-# W katalogu głównym WordPress
+# Przetwarzanie eksportów (co 5 min)
 wp cron event run woo_exporter_process_jobs
+
+# Sprawdzanie harmonogramów (co 1h)
+wp cron event run woo_exporter_check_schedules
 ```
 
-Lub dodaj do crontab systemowego:
-
+**Opcja 3: Systemowy crontab**
 ```bash
 */5 * * * * cd /path/to/wordpress && php wp-cron.php > /dev/null 2>&1
 ```
@@ -178,13 +193,15 @@ Lub dodaj do crontab systemowego:
 data-exporter/
 ├── src/
 │   ├── Admin/
-│   │   ├── AdminPage.php      # Panel administracyjny
-│   │   └── AjaxHandler.php    # Obsługa AJAX
+│   │   ├── AdminPage.php      # Panel administracyjny (3 zakładki)
+│   │   └── AjaxHandler.php    # Obsługa AJAX (jobs + schedules)
 │   ├── Cron/
-│   │   └── ExportWorker.php   # Worker przetwarzający zadania
+│   │   ├── ExportWorker.php   # Worker przetwarzający zadania
+│   │   └── ScheduleWorker.php # Worker sprawdzający harmonogramy
 │   ├── Database/
-│   │   ├── Schema.php         # Schemat bazy danych
-│   │   └── Job.php            # Model zadania
+│   │   ├── Schema.php         # Schemat bazy danych (2 tabele)
+│   │   ├── Job.php            # Model zadania
+│   │   └── Schedule.php       # Model harmonogramu
 │   ├── Download/
 │   │   └── FileHandler.php    # Obsługa pobierania plików
 │   └── Export/
@@ -192,11 +209,12 @@ data-exporter/
 │       └── CsvGenerator.php   # Generator CSV
 ├── assets/
 │   ├── css/
-│   │   └── admin.css          # Style panelu
+│   │   └── admin.css          # Style panelu + modali
 │   └── js/
-│       └── admin.js           # JavaScript panelu
+│       └── admin.js           # JavaScript (jobs + schedules + preview)
 ├── vendor/                     # Zależności Composer (nie w repo)
 ├── uploads/                    # Wygenerowane pliki (nie w repo)
+├── debug-meta-keys.php        # Narzędzie diagnostyczne
 ├── composer.json              # Konfiguracja Composer
 ├── woo-data-exporter.php     # Główny plik wtyczki
 └── README.md                  # Ta dokumentacja
@@ -247,6 +265,11 @@ error_log('Results count: ' . count($results));
 - Można zmienić w `src/Cron/ExportWorker.php` → `BATCH_SIZE`
 - Maksymalny czas wykonania cron: **45 sekund**
 
+### Zadania Cron
+
+- **woo_exporter_process_jobs**: Co 5 minut - przetwarza pending eksporty
+- **woo_exporter_check_schedules**: Co 1 godzinę - sprawdza harmonogramy i tworzy nowe joby
+
 ### Wydajność SQL
 
 Zapytania używają:
@@ -259,6 +282,16 @@ Zapytania używają:
 - `unset()` po każdej paczce
 - Brak ładowania całego resultsetu do pamięci
 - League\CSV używa stream'ów
+
+### Tabele Bazy Danych
+
+1. **wp_export_jobs**: Kolejka eksportów
+   - Kolumny: id, job_type, status, filters, file_path, notification_email, schedule_id, etc.
+   - Indeksy: status, job_type, schedule_id, created_at
+
+2. **wp_export_schedules**: Harmonogramy
+   - Kolumny: id, name, job_type, frequency_type, frequency_value, next_run_date, etc.
+   - Indeksy: next_run_date, is_active, created_by
 
 ## 🔄 Aktualizacje
 

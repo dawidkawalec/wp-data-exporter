@@ -28,6 +28,14 @@ class AjaxHandler {
         add_action('wp_ajax_delete_export_job', [$this, 'delete_export_job']);
         add_action('wp_ajax_preview_export_csv', [$this, 'preview_export_csv']);
         add_action('wp_ajax_run_cron_manually', [$this, 'run_cron_manually']);
+        
+        // Schedule actions
+        add_action('wp_ajax_create_schedule', [$this, 'create_schedule']);
+        add_action('wp_ajax_update_schedule', [$this, 'update_schedule']);
+        add_action('wp_ajax_delete_schedule', [$this, 'delete_schedule']);
+        add_action('wp_ajax_toggle_schedule', [$this, 'toggle_schedule']);
+        add_action('wp_ajax_get_schedule', [$this, 'get_schedule']);
+        add_action('wp_ajax_get_schedule_history', [$this, 'get_schedule_history']);
     }
 
     /**
@@ -546,6 +554,228 @@ class AjaxHandler {
         wp_send_json_success([
             'message' => __('Cron został uruchomiony. Sprawdź logi w wp-content/debug.log', 'woo-data-exporter')
         ]);
+    }
+
+    /**
+     * Create new schedule
+     */
+    public function create_schedule(): void {
+        if (!check_ajax_referer('woo_exporter_nonce', 'nonce', false)) {
+            wp_send_json_error(['message' => __('Nieprawidłowy token.', 'woo-data-exporter')], 403);
+        }
+
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error(['message' => __('Brak uprawnień.', 'woo-data-exporter')], 403);
+        }
+
+        $data = $this->sanitize_schedule_data($_POST);
+        
+        if (is_wp_error($data)) {
+            wp_send_json_error(['message' => $data->get_error_message()], 400);
+        }
+
+        $schedule_id = \WooExporter\Database\Schedule::create($data);
+
+        if (!$schedule_id) {
+            wp_send_json_error(['message' => __('Nie udało się utworzyć harmonogramu.', 'woo-data-exporter')], 500);
+        }
+
+        wp_send_json_success([
+            'message' => __('Harmonogram został utworzony.', 'woo-data-exporter'),
+            'schedule_id' => $schedule_id
+        ]);
+    }
+
+    /**
+     * Update schedule
+     */
+    public function update_schedule(): void {
+        if (!check_ajax_referer('woo_exporter_nonce', 'nonce', false)) {
+            wp_send_json_error(['message' => __('Nieprawidłowy token.', 'woo-data-exporter')], 403);
+        }
+
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error(['message' => __('Brak uprawnień.', 'woo-data-exporter')], 403);
+        }
+
+        $schedule_id = isset($_POST['schedule_id']) ? absint($_POST['schedule_id']) : 0;
+        
+        if (!$schedule_id) {
+            wp_send_json_error(['message' => __('Nieprawidłowe ID.', 'woo-data-exporter')], 400);
+        }
+
+        $data = $this->sanitize_schedule_data($_POST);
+        
+        if (is_wp_error($data)) {
+            wp_send_json_error(['message' => $data->get_error_message()], 400);
+        }
+
+        $success = \WooExporter\Database\Schedule::update($schedule_id, $data);
+
+        if (!$success) {
+            wp_send_json_error(['message' => __('Nie udało się zaktualizować.', 'woo-data-exporter')], 500);
+        }
+
+        wp_send_json_success(['message' => __('Harmonogram zaktualizowany.', 'woo-data-exporter')]);
+    }
+
+    /**
+     * Delete schedule
+     */
+    public function delete_schedule(): void {
+        if (!check_ajax_referer('woo_exporter_nonce', 'nonce', false)) {
+            wp_send_json_error(['message' => __('Nieprawidłowy token.', 'woo-data-exporter')], 403);
+        }
+
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error(['message' => __('Brak uprawnień.', 'woo-data-exporter')], 403);
+        }
+
+        $schedule_id = isset($_POST['schedule_id']) ? absint($_POST['schedule_id']) : 0;
+        
+        if (!$schedule_id) {
+            wp_send_json_error(['message' => __('Nieprawidłowe ID.', 'woo-data-exporter')], 400);
+        }
+
+        $success = \WooExporter\Database\Schedule::delete($schedule_id);
+
+        if (!$success) {
+            wp_send_json_error(['message' => __('Nie udało się usunąć.', 'woo-data-exporter')], 500);
+        }
+
+        wp_send_json_success(['message' => __('Harmonogram usunięty.', 'woo-data-exporter')]);
+    }
+
+    /**
+     * Toggle schedule active status
+     */
+    public function toggle_schedule(): void {
+        if (!check_ajax_referer('woo_exporter_nonce', 'nonce', false)) {
+            wp_send_json_error(['message' => __('Nieprawidłowy token.', 'woo-data-exporter')], 403);
+        }
+
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error(['message' => __('Brak uprawnień.', 'woo-data-exporter')], 403);
+        }
+
+        $schedule_id = isset($_POST['schedule_id']) ? absint($_POST['schedule_id']) : 0;
+        $is_active = isset($_POST['is_active']) ? (bool) $_POST['is_active'] : false;
+        
+        if (!$schedule_id) {
+            wp_send_json_error(['message' => __('Nieprawidłowe ID.', 'woo-data-exporter')], 400);
+        }
+
+        $success = \WooExporter\Database\Schedule::toggle_active($schedule_id, $is_active);
+
+        if (!$success) {
+            wp_send_json_error(['message' => __('Nie udało się zaktualizować.', 'woo-data-exporter')], 500);
+        }
+
+        $message = $is_active ? __('Harmonogram wznowiony.', 'woo-data-exporter') : __('Harmonogram zapauzowany.', 'woo-data-exporter');
+        wp_send_json_success(['message' => $message]);
+    }
+
+    /**
+     * Get schedule data
+     */
+    public function get_schedule(): void {
+        if (!check_ajax_referer('woo_exporter_nonce', 'nonce', false)) {
+            wp_send_json_error(['message' => __('Nieprawidłowy token.', 'woo-data-exporter')], 403);
+        }
+
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error(['message' => __('Brak uprawnień.', 'woo-data-exporter')], 403);
+        }
+
+        $schedule_id = isset($_POST['schedule_id']) ? absint($_POST['schedule_id']) : 0;
+        
+        if (!$schedule_id) {
+            wp_send_json_error(['message' => __('Nieprawidłowe ID.', 'woo-data-exporter')], 400);
+        }
+
+        $schedule = \WooExporter\Database\Schedule::get($schedule_id);
+
+        if (!$schedule) {
+            wp_send_json_error(['message' => __('Nie znaleziono.', 'woo-data-exporter')], 404);
+        }
+
+        wp_send_json_success(['schedule' => $schedule]);
+    }
+
+    /**
+     * Get schedule history (jobs created from this schedule)
+     */
+    public function get_schedule_history(): void {
+        if (!check_ajax_referer('woo_exporter_nonce', 'nonce', false)) {
+            wp_send_json_error(['message' => __('Nieprawidłowy token.', 'woo-data-exporter')], 403);
+        }
+
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error(['message' => __('Brak uprawnień.', 'woo-data-exporter')], 403);
+        }
+
+        $schedule_id = isset($_POST['schedule_id']) ? absint($_POST['schedule_id']) : 0;
+        
+        if (!$schedule_id) {
+            wp_send_json_error(['message' => __('Nieprawidłowe ID.', 'woo-data-exporter')], 400);
+        }
+
+        $jobs = Job::get_by_schedule($schedule_id, 20);
+
+        wp_send_json_success(['jobs' => $jobs]);
+    }
+
+    /**
+     * Sanitize schedule data
+     */
+    private function sanitize_schedule_data(array $post_data): array|\WP_Error {
+        $data = [];
+
+        // Name
+        if (empty($post_data['name'])) {
+            return new \WP_Error('invalid', __('Nazwa jest wymagana.', 'woo-data-exporter'));
+        }
+        $data['name'] = sanitize_text_field($post_data['name']);
+
+        // Job type
+        if (empty($post_data['job_type']) || !in_array($post_data['job_type'], ['marketing_export', 'analytics_export'])) {
+            return new \WP_Error('invalid', __('Nieprawidłowy typ eksportu.', 'woo-data-exporter'));
+        }
+        $data['job_type'] = $post_data['job_type'];
+
+        // Frequency type
+        if (empty($post_data['frequency_type']) || !in_array($post_data['frequency_type'], ['daily', 'weekly', 'monthly'])) {
+            return new \WP_Error('invalid', __('Nieprawidłowa częstotliwość.', 'woo-data-exporter'));
+        }
+        $data['frequency_type'] = $post_data['frequency_type'];
+
+        // Frequency value
+        $freq_value = isset($post_data['frequency_value']) ? absint($post_data['frequency_value']) : 0;
+        if ($freq_value < 1 || $freq_value > 31) {
+            return new \WP_Error('invalid', __('Nieprawidłowa wartość częstotliwości.', 'woo-data-exporter'));
+        }
+        $data['frequency_value'] = $freq_value;
+
+        // Start date
+        if (empty($post_data['start_date']) || !$this->is_valid_date($post_data['start_date'])) {
+            return new \WP_Error('invalid', __('Nieprawidłowa data rozpoczęcia.', 'woo-data-exporter'));
+        }
+        $data['start_date'] = sanitize_text_field($post_data['start_date']);
+
+        // Notification email
+        if (empty($post_data['notification_email'])) {
+            return new \WP_Error('invalid', __('Email jest wymagany.', 'woo-data-exporter'));
+        }
+        $emails = sanitize_text_field($post_data['notification_email']);
+        $email_array = array_map('trim', explode(',', $emails));
+        $valid_emails = array_filter($email_array, 'is_email');
+        
+        if (count($valid_emails) !== count($email_array)) {
+            return new \WP_Error('invalid', __('Nieprawidłowy email.', 'woo-data-exporter'));
+        }
+        $data['notification_email'] = implode(',', $valid_emails);
+
+        return $data;
     }
 
     /**
