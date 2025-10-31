@@ -281,24 +281,24 @@ class AdminPage {
 
             <div class="export-info-boxes">
                 <div class="info-box">
-                    <h3><?php esc_html_e('📊 Eksport Marketingowy', 'woo-data-exporter'); ?></h3>
-                    <p><?php esc_html_e('Agregowane dane o klientach - jeden wiersz per unikalny adres email.', 'woo-data-exporter'); ?></p>
+                    <h3>📊 Eksport Marketingowy</h3>
+                    <p>Agregowane dane o klientach - jeden wiersz per unikalny adres email.</p>
                     <ul>
-                        <li><?php esc_html_e('Email, imię, nazwisko', 'woo-data-exporter'); ?></li>
-                        <li><?php esc_html_e('Zgoda marketingowa', 'woo-data-exporter'); ?></li>
-                        <li><?php esc_html_e('Suma wydanych środków', 'woo-data-exporter'); ?></li>
-                        <li><?php esc_html_e('Liczba zamówień', 'woo-data-exporter'); ?></li>
+                        <li>Email, imię, nazwisko</li>
+                        <li>Zgoda marketingowa</li>
+                        <li>Suma wydanych środków</li>
+                        <li>Liczba zamówień</li>
                     </ul>
                 </div>
 
                 <div class="info-box">
-                    <h3><?php esc_html_e('📈 Eksport Analityczny', 'woo-data-exporter'); ?></h3>
-                    <p><?php esc_html_e('Szczegółowe dane sprzedażowe - jeden wiersz per produkt w zamówieniu.', 'woo-data-exporter'); ?></p>
+                    <h3>📈 Eksport Analityczny</h3>
+                    <p>Szczegółowe dane sprzedażowe - jeden wiersz per produkt w zamówieniu.</p>
                     <ul>
-                        <li><?php esc_html_e('Pełne dane zamówienia', 'woo-data-exporter'); ?></li>
-                        <li><?php esc_html_e('Dane produktów i ilości', 'woo-data-exporter'); ?></li>
-                        <li><?php esc_html_e('Informacje rozliczeniowe', 'woo-data-exporter'); ?></li>
-                        <li><?php esc_html_e('Użyte kupony', 'woo-data-exporter'); ?></li>
+                        <li>Pełne dane zamówienia</li>
+                        <li>Dane produktów i ilości</li>
+                        <li>Informacje rozliczeniowe</li>
+                        <li>Użyte kupony</li>
                     </ul>
                 </div>
             </div>
