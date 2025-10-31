@@ -481,7 +481,7 @@
         min-width: 600px;
     }
     
-    /* Wrap tables in scroll container */
+    /* Wrap tables in scroll container - WITH INDICATORS */
     .woo-exporter-tab-history,
     .woo-exporter-tab-schedules,
     .woo-exporter-tab-templates {
@@ -496,41 +496,36 @@
     .woo-exporter-tab-templates > table {
         width: auto;
         min-width: 100%;
-        position: relative;
     }
     
-    /* Scroll indicator - gradient fade ON TABLE */
-    .woo-exporter-tab-history > table::after,
-    .woo-exporter-tab-schedules > table::after,
-    .woo-exporter-tab-templates > table::after {
+    /* Scroll indicator - gradient fade (ABSOLUTE, zawsze widoczny) */
+    .woo-exporter-tab-history::after,
+    .woo-exporter-tab-schedules::after,
+    .woo-exporter-tab-templates::after {
         content: '';
-        position: sticky;
-        display: block;
+        position: absolute;
         top: 0;
         right: 0;
         bottom: 0;
         width: 200px;
-        height: 100%;
         background: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.7) 30%, rgba(255, 255, 255, 0.95) 70%, #ffffff 100%);
         pointer-events: none;
         z-index: 10;
-        float: right;
-        margin-right: -200px;
         transition: opacity 0.3s ease;
     }
     
-    .woo-exporter-tab-history.scrolled-to-end > table::after,
-    .woo-exporter-tab-schedules.scrolled-to-end > table::after,
-    .woo-exporter-tab-templates.scrolled-to-end > table::after {
+    .woo-exporter-tab-history.scrolled-to-end::after,
+    .woo-exporter-tab-schedules.scrolled-to-end::after,
+    .woo-exporter-tab-templates.scrolled-to-end::after {
         opacity: 0;
     }
     
-    /* Scroll arrow indicator */
+    /* Scroll arrow indicator (ABSOLUTE do container, nie viewport) */
     .woo-exporter-tab-history::before,
     .woo-exporter-tab-schedules::before,
     .woo-exporter-tab-templates::before {
         content: '';
-        position: fixed;
+        position: absolute;
         top: 50%;
         right: 15px;
         transform: translateY(-50%);
@@ -540,7 +535,7 @@
         background-size: contain;
         background-repeat: no-repeat;
         pointer-events: none;
-        z-index: 100;
+        z-index: 11;
         animation: scroll-hint 2s ease-in-out infinite;
         opacity: 0.8;
     }
