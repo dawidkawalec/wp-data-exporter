@@ -301,7 +301,12 @@
                 formData.template_id = templateId;
             }
             
-            console.log('Saving template:', formData);
+            console.log('Saving template - Full details:');
+            console.log('  action:', formData.action);
+            console.log('  template_id:', formData.template_id);
+            console.log('  name:', formData.name);
+            console.log('  selected_fields:', formData.selected_fields);
+            console.log('  Full formData:', formData);
             
             $.ajax({
                 url: wooExporterAdmin.ajax_url,

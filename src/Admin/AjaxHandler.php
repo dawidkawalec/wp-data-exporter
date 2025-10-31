@@ -821,11 +821,16 @@ class AjaxHandler {
      * Create template
      */
     public function create_template(): void {
+        error_log('WOO_EXPORTER: create_template called');
+        error_log('WOO_EXPORTER: POST data: ' . print_r($_POST, true));
+        
         if (!check_ajax_referer('woo_exporter_nonce', 'nonce', false)) {
+            error_log('WOO_EXPORTER: Nonce check failed');
             wp_send_json_error(['message' => 'Invalid nonce'], 403);
         }
 
         if (!current_user_can('manage_woocommerce')) {
+            error_log('WOO_EXPORTER: Permission check failed');
             wp_send_json_error(['message' => 'No permission'], 403);
         }
 
@@ -837,16 +842,21 @@ class AjaxHandler {
             'field_order' => json_decode(stripslashes($_POST['field_order'] ?? '[]'), true),
         ];
 
+        error_log('WOO_EXPORTER: Parsed data: ' . print_r($data, true));
+
         if (empty($data['name']) || empty($data['selected_fields'])) {
+            error_log('WOO_EXPORTER: Validation failed - name or fields empty');
             wp_send_json_error(['message' => 'Nazwa i pola są wymagane'], 400);
         }
 
         $template_id = \WooExporter\Database\Template::create($data);
 
         if (!$template_id) {
-            wp_send_json_error(['message' => 'Nie udało się utworzyć szablonu'], 500);
+            error_log('WOO_EXPORTER: Template::create() returned false. DB error: ' . $GLOBALS['wpdb']->last_error);
+            wp_send_json_error(['message' => 'Nie udało się utworzyć szablonu. Sprawdź logi.'], 500);
         }
 
+        error_log('WOO_EXPORTER: Template created successfully, ID: ' . $template_id);
         wp_send_json_success(['message' => 'Szablon utworzony', 'template_id' => $template_id]);
     }
 
