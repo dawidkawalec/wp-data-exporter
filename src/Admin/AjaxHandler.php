@@ -761,11 +761,22 @@ class AjaxHandler {
         }
         $data['frequency_value'] = $freq_value;
 
-        // Start date
-        if (empty($post_data['start_date']) || !$this->is_valid_date($post_data['start_date'])) {
-            return new \WP_Error('invalid', __('Nieprawidłowa data rozpoczęcia.', 'woo-data-exporter'));
+        // Start date (with time)
+        if (empty($post_data['start_date'])) {
+            return new \WP_Error('invalid', __('Data rozpoczęcia jest wymagana.', 'woo-data-exporter'));
         }
-        $data['start_date'] = sanitize_text_field($post_data['start_date']);
+        
+        // Validate datetime format (Y-m-d or Y-m-d H:i:s)
+        $start_date = sanitize_text_field($post_data['start_date']);
+        $test_date = \DateTime::createFromFormat('Y-m-d H:i:s', $start_date);
+        if (!$test_date) {
+            $test_date = \DateTime::createFromFormat('Y-m-d', $start_date);
+            if (!$test_date) {
+                return new \WP_Error('invalid', __('Nieprawidłowy format daty.', 'woo-data-exporter'));
+            }
+        }
+        
+        $data['start_date'] = $start_date;
 
         // Notification email
         if (empty($post_data['notification_email'])) {

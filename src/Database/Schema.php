@@ -74,7 +74,7 @@ class Schema {
             template_id BIGINT(20) UNSIGNED NULL COMMENT 'ID szablonu (dla custom_export)',
             frequency_type VARCHAR(20) NOT NULL COMMENT 'daily, weekly, monthly',
             frequency_value INT UNSIGNED NOT NULL COMMENT 'Co ile dni / który dzień tygodnia / miesiąca',
-            start_date DATE NOT NULL COMMENT 'Data rozpoczęcia',
+            start_date DATETIME NOT NULL COMMENT 'Data i godzina rozpoczęcia',
             next_run_date DATETIME NOT NULL COMMENT 'Kiedy następne uruchomienie',
             notification_email VARCHAR(500) NOT NULL COMMENT 'Email(e) do powiadomień',
             filters JSON NULL COMMENT 'Filtry dla eksportu',
