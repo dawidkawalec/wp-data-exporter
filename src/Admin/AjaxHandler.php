@@ -90,8 +90,25 @@ class AjaxHandler {
             ], 400);
         }
 
+        // Get notification email (optional)
+        $notification_email = null;
+        if (isset($_POST['notification_email']) && !empty($_POST['notification_email'])) {
+            $emails = sanitize_text_field($_POST['notification_email']);
+            // Validate emails
+            $email_array = array_map('trim', explode(',', $emails));
+            $valid_emails = array_filter($email_array, 'is_email');
+            
+            if (count($valid_emails) !== count($email_array)) {
+                wp_send_json_error([
+                    'message' => __('Jeden lub więcej adresów email jest nieprawidłowych.', 'woo-data-exporter')
+                ], 400);
+            }
+            
+            $notification_email = implode(',', $valid_emails);
+        }
+
         // Create job
-        $job_id = Job::create($job_type, $filters, get_current_user_id());
+        $job_id = Job::create($job_type, $filters, get_current_user_id(), $notification_email);
 
         if (!$job_id) {
             wp_send_json_error([

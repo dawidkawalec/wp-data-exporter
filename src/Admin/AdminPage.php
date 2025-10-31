@@ -166,6 +166,18 @@ class AdminPage {
                                 </p>
                             </td>
                         </tr>
+                        <tr>
+                            <th scope="row">
+                                <label for="notification_email"><?php esc_html_e('Email do powiadomienia', 'woo-data-exporter'); ?></label>
+                            </th>
+                            <td>
+                                <input type="text" name="notification_email" id="notification_email" class="regular-text" 
+                                       placeholder="email@example.com, drugi@email.pl" />
+                                <p class="description">
+                                    <?php esc_html_e('Opcjonalne: adresy email do powiadomień (oddzielone przecinkami). Domyślnie: Twój email.', 'woo-data-exporter'); ?>
+                                </p>
+                            </td>
+                        </tr>
                     </table>
 
                     <p class="submit">

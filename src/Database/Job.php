@@ -36,9 +36,17 @@ class Job {
      * @param string $job_type Job type (marketing_export or analytics_export)
      * @param array $filters Optional filters (start_date, end_date, etc.)
      * @param int $requester_id User ID who requested the export
+     * @param string|null $notification_email Email(s) for notifications (comma-separated)
+     * @param int|null $schedule_id Schedule ID if auto-generated
      * @return int|false Job ID on success, false on failure
      */
-    public static function create(string $job_type, array $filters = [], int $requester_id = 0): int|false {
+    public static function create(
+        string $job_type, 
+        array $filters = [], 
+        int $requester_id = 0,
+        ?string $notification_email = null,
+        ?int $schedule_id = null
+    ): int|false {
         global $wpdb;
 
         if ($requester_id === 0) {
@@ -47,17 +55,27 @@ class Job {
 
         $table_name = Schema::get_table_name();
 
-        $result = $wpdb->insert(
-            $table_name,
-            [
-                'job_type' => $job_type,
-                'status' => self::STATUS_PENDING,
-                'filters' => !empty($filters) ? wp_json_encode($filters) : null,
-                'requester_id' => $requester_id,
-                'file_url_hash' => wp_generate_password(32, false),
-            ],
-            ['%s', '%s', '%s', '%d', '%s']
-        );
+        $data = [
+            'job_type' => $job_type,
+            'status' => self::STATUS_PENDING,
+            'filters' => !empty($filters) ? wp_json_encode($filters) : null,
+            'requester_id' => $requester_id,
+            'file_url_hash' => wp_generate_password(32, false),
+        ];
+
+        $format = ['%s', '%s', '%s', '%d', '%s'];
+
+        if ($notification_email !== null) {
+            $data['notification_email'] = $notification_email;
+            $format[] = '%s';
+        }
+
+        if ($schedule_id !== null) {
+            $data['schedule_id'] = $schedule_id;
+            $format[] = '%d';
+        }
+
+        $result = $wpdb->insert($table_name, $data, $format);
 
         return $result !== false ? $wpdb->insert_id : false;
     }

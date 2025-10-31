@@ -45,7 +45,8 @@
                 nonce: wooExporterAdmin.nonce,
                 export_type: $form.find('#export_type').val(),
                 start_date: $form.find('#start_date').val(),
-                end_date: $form.find('#end_date').val()
+                end_date: $form.find('#end_date').val(),
+                notification_email: $form.find('#notification_email').val()
             };
 
             // Validate

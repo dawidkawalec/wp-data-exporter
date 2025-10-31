@@ -198,8 +198,21 @@ class ExportWorker {
      * @param string $file_path Path to generated file
      */
     private function send_completion_email(object $job, string $file_path): void {
-        $user = get_userdata($job->requester_id);
-        if (!$user) {
+        // Determine recipient(s)
+        $recipients = [];
+        
+        if (!empty($job->notification_email)) {
+            // Use custom notification email(s)
+            $recipients = array_map('trim', explode(',', $job->notification_email));
+        } else {
+            // Fallback to requester email
+            $user = get_userdata($job->requester_id);
+            if ($user) {
+                $recipients[] = $user->user_email;
+            }
+        }
+
+        if (empty($recipients)) {
             return;
         }
 
@@ -216,8 +229,7 @@ class ExportWorker {
             : __('Analityka', 'woo-data-exporter');
 
         $message = sprintf(
-            __("Witaj %s,\n\nTwój eksport danych został pomyślnie wygenerowany.\n\nTyp eksportu: %s\nLiczba rekordów: %d\nData utworzenia: %s\n\nPobierz plik:\n%s\n\nLink będzie aktywny przez 7 dni.\n\nPozdrawiam,\n%s", 'woo-data-exporter'),
-            $user->display_name,
+            __("Twój eksport danych został pomyślnie wygenerowany.\n\nTyp eksportu: %s\nLiczba rekordów: %d\nData utworzenia: %s\n\nPobierz plik:\n%s\n\nLink będzie aktywny przez 7 dni.\n\nPozdrawiam,\n%s", 'woo-data-exporter'),
             $job_type_label,
             $job->processed_items ?? 0,
             date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($job->created_at)),
@@ -225,7 +237,10 @@ class ExportWorker {
             get_bloginfo('name')
         );
 
-        wp_mail($user->user_email, $subject, $message);
+        // Send to all recipients
+        foreach ($recipients as $recipient) {
+            wp_mail($recipient, $subject, $message);
+        }
     }
 
     /**
