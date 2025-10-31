@@ -289,13 +289,17 @@
             const formData = {
                 action: action,
                 nonce: wooExporterAdmin.nonce,
-                template_id: templateId,
                 name: $('#template_name').val(),
                 description: $('#template_description').val(),
                 selected_fields: JSON.stringify(this.selectedFields),
                 field_aliases: JSON.stringify(this.fieldAliases),
                 field_order: JSON.stringify(this.selectedFields)
             };
+            
+            // Only add template_id if editing
+            if (templateId) {
+                formData.template_id = templateId;
+            }
             
             console.log('Saving template:', formData);
             
