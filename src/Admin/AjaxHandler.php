@@ -293,6 +293,8 @@ class AjaxHandler {
 
         // Get job ID
         $job_id = isset($_POST['job_id']) ? absint($_POST['job_id']) : 0;
+        $page = isset($_POST['page']) ? absint($_POST['page']) : 1;
+        $per_page = isset($_POST['per_page']) ? absint($_POST['per_page']) : 100;
 
         if (!$job_id) {
             wp_send_json_error([
@@ -323,14 +325,17 @@ class AjaxHandler {
             ], 404);
         }
 
-        // Read first 500 rows of CSV (or all if less)
+        // Read CSV with pagination
         try {
-            $csv_data = $this->read_csv_preview($job->file_path, 500);
+            $csv_data = $this->read_csv_paginated($job->file_path, $page, $per_page);
             
             wp_send_json_success([
                 'headers' => $csv_data['headers'] ?? [],
                 'rows' => $csv_data['rows'] ?? [],
-                'total_rows' => $csv_data['total_rows'] ?? 0
+                'total_rows' => $csv_data['total_rows'] ?? 0,
+                'current_page' => $csv_data['current_page'] ?? 1,
+                'per_page' => $csv_data['per_page'] ?? 100,
+                'total_pages' => $csv_data['total_pages'] ?? 1
             ]);
         } catch (\Exception $e) {
             wp_send_json_error([
@@ -340,13 +345,14 @@ class AjaxHandler {
     }
 
     /**
-     * Read CSV file preview
+     * Read CSV file with pagination
      *
      * @param string $file_path Path to CSV file
-     * @param int $limit Number of rows to read (default 500, 0 = all)
-     * @return array CSV data
+     * @param int $page Current page (1-based)
+     * @param int $per_page Rows per page
+     * @return array CSV data with pagination info
      */
-    private function read_csv_preview(string $file_path, int $limit = 500): array {
+    private function read_csv_paginated(string $file_path, int $page = 1, int $per_page = 100): array {
         $file = fopen($file_path, 'r');
         if (!$file) {
             throw new \Exception('Cannot open file');
@@ -359,28 +365,35 @@ class AjaxHandler {
             throw new \Exception('No headers found');
         }
 
-        // Read rows
-        $rows = [];
-        $count = 0;
-        
-        if ($limit === 0) {
-            // Read all rows
-            while (($row = fgetcsv($file)) !== false) {
-                $rows[] = $row;
-                $count++;
-            }
-            $total_rows = $count;
-        } else {
-            // Read limited rows
-            while (($row = fgetcsv($file)) !== false && $count < $limit) {
-                $rows[] = $row;
-                $count++;
-            }
+        // Count total rows first (fast scan)
+        $total_rows = 0;
+        while (fgetcsv($file) !== false) {
+            $total_rows++;
+        }
 
-            // Count total rows
-            $total_rows = $count;
-            while (fgetcsv($file) !== false) {
-                $total_rows++;
+        // Calculate pagination
+        $total_pages = ceil($total_rows / $per_page);
+        $page = max(1, min($page, $total_pages)); // Clamp page number
+        $start_row = ($page - 1) * $per_page;
+        $end_row = $start_row + $per_page;
+
+        // Rewind and skip to start row
+        rewind($file);
+        fgetcsv($file); // Skip header again
+
+        $current_row = 0;
+        $rows = [];
+
+        while (($row = fgetcsv($file)) !== false) {
+            if ($current_row >= $start_row && $current_row < $end_row) {
+                $rows[] = $row;
+            }
+            
+            $current_row++;
+            
+            // Stop reading after we have what we need
+            if ($current_row >= $end_row) {
+                break;
             }
         }
 
@@ -389,7 +402,10 @@ class AjaxHandler {
         return [
             'headers' => $headers,
             'rows' => $rows,
-            'total_rows' => $total_rows + 1 // +1 for header
+            'total_rows' => $total_rows,
+            'current_page' => $page,
+            'per_page' => $per_page,
+            'total_pages' => $total_pages
         ];
     }
 

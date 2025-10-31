@@ -176,17 +176,21 @@
         /**
          * Show preview modal
          */
-        showPreviewModal: function(jobId) {
+        showPreviewModal: function(jobId, page) {
             const $modal = $('#csv-preview-modal');
             const $loading = $modal.find('.csv-preview-loading');
             const $tableWrapper = $modal.find('.csv-preview-table-wrapper');
             const $info = $modal.find('.csv-preview-info');
 
+            page = page || 1;
+
+            // Store current job ID for pagination
+            $modal.data('current-job-id', jobId);
+
             // Show modal and loading
             $modal.fadeIn();
             $loading.show();
             $tableWrapper.empty().hide();
-            $info.empty();
 
             // Fetch CSV data
             $.ajax({
@@ -195,7 +199,9 @@
                 data: {
                     action: 'preview_export_csv',
                     nonce: wooExporterAdmin.nonce,
-                    job_id: jobId
+                    job_id: jobId,
+                    page: page,
+                    per_page: 100
                 },
                 success: function(response) {
                     $loading.hide();
@@ -220,9 +226,49 @@
             const headers = data.headers || [];
             const rows = data.rows || [];
             const totalRows = data.total_rows || 0;
+            const currentPage = data.current_page || 1;
+            const perPage = data.per_page || 100;
+            const totalPages = data.total_pages || 1;
 
-            // Show info
-            $info.html('<p><strong>Wyświetlono:</strong> ' + rows.length + ' z ' + totalRows + ' wierszy (bez nagłówka)</p>');
+            // Calculate row range
+            const startRow = ((currentPage - 1) * perPage) + 1;
+            const endRow = Math.min(startRow + rows.length - 1, totalRows);
+
+            // Show info with pagination
+            let infoHtml = '<div style="display: flex; justify-content: space-between; align-items: center;">';
+            infoHtml += '<div><strong>Wiersze:</strong> ' + startRow + '-' + endRow + ' z ' + totalRows + ' (bez nagłówka)</div>';
+            
+            // Pagination controls
+            if (totalPages > 1) {
+                infoHtml += '<div class="csv-pagination">';
+                
+                // First + Previous
+                if (currentPage > 1) {
+                    infoHtml += '<button class="button csv-page-btn" data-page="1" title="Pierwsza strona">«</button> ';
+                    infoHtml += '<button class="button csv-page-btn" data-page="' + (currentPage - 1) + '" title="Poprzednia">‹</button> ';
+                }
+                
+                // Page info
+                infoHtml += '<span style="margin: 0 10px;"><strong>Strona ' + currentPage + ' / ' + totalPages + '</strong></span>';
+                
+                // Next + Last
+                if (currentPage < totalPages) {
+                    infoHtml += '<button class="button csv-page-btn" data-page="' + (currentPage + 1) + '" title="Następna">›</button> ';
+                    infoHtml += '<button class="button csv-page-btn" data-page="' + totalPages + '" title="Ostatnia strona">»</button>';
+                }
+                
+                infoHtml += '</div>';
+            }
+            infoHtml += '</div>';
+            
+            $info.html(infoHtml);
+
+            // Bind pagination buttons
+            $info.find('.csv-page-btn').on('click', function() {
+                const page = $(this).data('page');
+                const jobId = $('#csv-preview-modal').data('current-job-id');
+                WooExporter.showPreviewModal(jobId, page);
+            });
 
             // Build table
             let html = '<table class="wp-list-table widefat striped">';

@@ -48,7 +48,7 @@ class DataQuery {
                 MAX(pm_email.meta_value) as email,
                 MAX(pm_first_name.meta_value) as first_name,
                 MAX(pm_last_name.meta_value) as last_name,
-                MAX(pm_consent.meta_value) as zgoda_marketingowa,
+                MAX(pm_consent.meta_value) as zgoda_marketingowa_raw,
                 SUM(pm_total.meta_value) as total_spent,
                 COUNT(DISTINCT p.ID) as order_count,
                 MAX(p.post_date) as last_order_date
@@ -57,7 +57,7 @@ class DataQuery {
             LEFT JOIN {$wpdb->postmeta} pm_first_name ON p.ID = pm_first_name.post_id AND pm_first_name.meta_key = '_billing_first_name'
             LEFT JOIN {$wpdb->postmeta} pm_last_name ON p.ID = pm_last_name.post_id AND pm_last_name.meta_key = '_billing_last_name'
             LEFT JOIN {$wpdb->postmeta} pm_total ON p.ID = pm_total.post_id AND pm_total.meta_key = '_order_total'
-            LEFT JOIN {$wpdb->postmeta} pm_consent ON p.ID = pm_consent.post_id AND pm_consent.meta_key = '_wc_order_attribution_utm_marketing_tactic'
+            LEFT JOIN {$wpdb->postmeta} pm_consent ON p.ID = pm_consent.post_id AND pm_consent.meta_key = '_additional_terms'
             WHERE {$where_sql}
             AND pm_email.meta_value IS NOT NULL
             AND pm_email.meta_value != ''
@@ -66,7 +66,53 @@ class DataQuery {
             LIMIT %d OFFSET %d
         ";
 
-        return $wpdb->get_results($wpdb->prepare($sql, $limit, $offset), ARRAY_A);
+        $results = $wpdb->get_results($wpdb->prepare($sql, $limit, $offset), ARRAY_A);
+        
+        // Parse serialized consent data
+        foreach ($results as &$row) {
+            $row['zgoda_marketingowa'] = self::parse_consent_field($row['zgoda_marketingowa_raw'] ?? '');
+            unset($row['zgoda_marketingowa_raw']);
+        }
+
+        return $results;
+
+        // This is now handled in get_marketing_data
+    }
+
+    /**
+     * Parse consent field from serialized data
+     *
+     * @param string $raw_value Serialized PHP array or simple value
+     * @return string Parsed consent value (tak/nie)
+     */
+    private static function parse_consent_field(string $raw_value): string {
+        if (empty($raw_value)) {
+            return '';
+        }
+
+        // Try to unserialize (it's a PHP serialized array)
+        $data = @unserialize($raw_value);
+        
+        if ($data === false || !is_array($data)) {
+            // If not serialized or failed, return as is
+            return $raw_value;
+        }
+
+        // It's an array - look for consent field
+        // Structure: a:1:{i:1;a:13:{s:4:"name";s:18:"Zgoda marketingowa";s:6:"status";s:1:"1";...}}
+        foreach ($data as $item) {
+            if (is_array($item) && isset($item['name'], $item['status'])) {
+                // Check if this is the marketing consent
+                if (stripos($item['name'], 'marketingowa') !== false || 
+                    stripos($item['name'], 'zgoda') !== false ||
+                    stripos($item['name'], 'consent') !== false) {
+                    // Return status: 1 = tak, 0 = nie
+                    return $item['status'] == '1' ? 'tak' : 'nie';
+                }
+            }
+        }
+
+        return '';
     }
 
     /**
@@ -145,7 +191,7 @@ class DataQuery {
                 oim_qty.meta_value as item_quantity,
                 oim_total.meta_value as item_total,
                 pm_coupons.meta_value as coupons_used,
-                pm_consent.meta_value as zgoda_marketingowa
+                pm_consent.meta_value as zgoda_marketingowa_raw
             FROM {$wpdb->posts} p
             LEFT JOIN {$wpdb->prefix}woocommerce_order_items oi ON p.ID = oi.order_id AND oi.order_item_type = 'line_item'
             LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta oim_qty ON oi.order_item_id = oim_qty.order_item_id AND oim_qty.meta_key = '_qty'
@@ -160,13 +206,21 @@ class DataQuery {
             LEFT JOIN {$wpdb->postmeta} pm_postcode ON p.ID = pm_postcode.post_id AND pm_postcode.meta_key = '_billing_postcode'
             LEFT JOIN {$wpdb->postmeta} pm_customer_id ON p.ID = pm_customer_id.post_id AND pm_customer_id.meta_key = '_customer_user'
             LEFT JOIN {$wpdb->postmeta} pm_coupons ON p.ID = pm_coupons.post_id AND pm_coupons.meta_key = '_used_coupons'
-            LEFT JOIN {$wpdb->postmeta} pm_consent ON p.ID = pm_consent.post_id AND pm_consent.meta_key = '_wc_order_attribution_utm_marketing_tactic'
+            LEFT JOIN {$wpdb->postmeta} pm_consent ON p.ID = pm_consent.post_id AND pm_consent.meta_key = '_additional_terms'
             WHERE {$where_sql}
             ORDER BY p.post_date DESC, oi.order_item_id ASC
             LIMIT %d OFFSET %d
         ";
 
-        return $wpdb->get_results($wpdb->prepare($sql, $limit, $offset), ARRAY_A);
+        $results = $wpdb->get_results($wpdb->prepare($sql, $limit, $offset), ARRAY_A);
+        
+        // Parse serialized consent data
+        foreach ($results as &$row) {
+            $row['zgoda_marketingowa'] = self::parse_consent_field($row['zgoda_marketingowa_raw'] ?? '');
+            unset($row['zgoda_marketingowa_raw']);
+        }
+
+        return $results;
     }
 
     /**

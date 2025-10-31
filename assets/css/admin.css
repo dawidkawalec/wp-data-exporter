@@ -292,6 +292,20 @@
     color: #646970;
 }
 
+.csv-preview-info .csv-pagination {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.csv-preview-info .csv-page-btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    font-size: 18px;
+    line-height: 1;
+}
+
 .csv-preview-body {
     padding: 20px;
     overflow-y: auto;
