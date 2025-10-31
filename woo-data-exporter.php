@@ -74,6 +74,9 @@ class Plugin {
      * Initialize plugin components
      */
     public function init(): void {
+        // Run migrations (safe, idempotent)
+        Database\Migration::run();
+        
         // Load text domain for translations
         load_plugin_textdomain('woo-data-exporter', false, dirname(plugin_basename(__FILE__)) . '/languages');
 

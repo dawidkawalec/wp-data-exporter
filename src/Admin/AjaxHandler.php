@@ -571,14 +571,27 @@ class AjaxHandler {
         $data = $this->sanitize_schedule_data($_POST);
         
         if (is_wp_error($data)) {
+            error_log('WOO_EXPORTER: Schedule validation error: ' . $data->get_error_message());
             wp_send_json_error(['message' => $data->get_error_message()], 400);
         }
 
+        error_log('WOO_EXPORTER: Creating schedule with data: ' . json_encode($data));
+        
         $schedule_id = \WooExporter\Database\Schedule::create($data);
 
         if (!$schedule_id) {
-            wp_send_json_error(['message' => __('Nie udało się utworzyć harmonogramu.', 'woo-data-exporter')], 500);
+            // Check database health
+            $health = \WooExporter\Database\Migration::check_health();
+            error_log('WOO_EXPORTER: Schedule creation failed. DB Health: ' . json_encode($health));
+            error_log('WOO_EXPORTER: Last DB error: ' . $GLOBALS['wpdb']->last_error);
+            
+            wp_send_json_error([
+                'message' => __('Nie udało się utworzyć harmonogramu.', 'woo-data-exporter') . ' ' . 
+                             __('Sprawdź logi lub spróbuj dezaktywować i aktywować wtyczkę.', 'woo-data-exporter')
+            ], 500);
         }
+
+        error_log('WOO_EXPORTER: Schedule #' . $schedule_id . ' created successfully');
 
         wp_send_json_success([
             'message' => __('Harmonogram został utworzony.', 'woo-data-exporter'),
