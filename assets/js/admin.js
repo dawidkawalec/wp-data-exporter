@@ -696,6 +696,24 @@
     // Initialize on document ready
     $(document).ready(function() {
         WooExporter.init();
+        
+        // Handle scroll indicator visibility
+        $('.woo-exporter-tab-history, .woo-exporter-tab-schedules, .woo-exporter-tab-templates').on('scroll', function() {
+            const $container = $(this);
+            const scrollLeft = $container.scrollLeft();
+            const scrollWidth = $container[0].scrollWidth;
+            const clientWidth = $container[0].clientWidth;
+            
+            // Check if scrolled to end (within 10px threshold)
+            if (scrollLeft + clientWidth >= scrollWidth - 10) {
+                $container.addClass('scrolled-to-end');
+            } else {
+                $container.removeClass('scrolled-to-end');
+            }
+        });
+        
+        // Trigger initial check
+        $('.woo-exporter-tab-history, .woo-exporter-tab-schedules, .woo-exporter-tab-templates').trigger('scroll');
     });
 
 })(jQuery);

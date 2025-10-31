@@ -488,6 +488,67 @@
         max-width: 100vw;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
+        position: relative;
+    }
+    
+    /* Scroll indicator - gradient fade */
+    .woo-exporter-tab-history::after,
+    .woo-exporter-tab-schedules::after,
+    .woo-exporter-tab-templates::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 25vw;
+        max-width: 150px;
+        background: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.9) 50%, #ffffff 100%);
+        pointer-events: none;
+        z-index: 10;
+        transition: opacity 0.3s ease;
+    }
+    
+    .woo-exporter-tab-history.scrolled-to-end::after,
+    .woo-exporter-tab-schedules.scrolled-to-end::after,
+    .woo-exporter-tab-templates.scrolled-to-end::after {
+        opacity: 0;
+    }
+    
+    /* Scroll arrow indicator */
+    .woo-exporter-tab-history::before,
+    .woo-exporter-tab-schedules::before,
+    .woo-exporter-tab-templates::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: 30px;
+        transform: translateY(-50%);
+        width: 40px;
+        height: 40px;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%232271b1"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/><path d="M0 0h24v24H0V0z" fill="none"/></svg>');
+        background-size: contain;
+        background-repeat: no-repeat;
+        pointer-events: none;
+        z-index: 11;
+        animation: scroll-hint 2s ease-in-out infinite;
+        opacity: 0.8;
+    }
+    
+    .woo-exporter-tab-history.scrolled-to-end::before,
+    .woo-exporter-tab-schedules.scrolled-to-end::before,
+    .woo-exporter-tab-templates.scrolled-to-end::before {
+        display: none;
+    }
+    
+    @keyframes scroll-hint {
+        0%, 100% {
+            transform: translateY(-50%) translateX(0);
+            opacity: 0.8;
+        }
+        50% {
+            transform: translateY(-50%) translateX(8px);
+            opacity: 1;
+        }
     }
     
     .woo-exporter-tab-history > table,
