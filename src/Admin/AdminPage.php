@@ -268,6 +268,7 @@ class AdminPage {
                     <thead>
                         <tr>
                             <th><?php esc_html_e('ID', 'woo-data-exporter'); ?></th>
+                            <th><?php esc_html_e('Źródło', 'woo-data-exporter'); ?></th>
                             <th><?php esc_html_e('Typ', 'woo-data-exporter'); ?></th>
                             <th><?php esc_html_e('Status', 'woo-data-exporter'); ?></th>
                             <th><?php esc_html_e('Postęp', 'woo-data-exporter'); ?></th>
@@ -280,6 +281,7 @@ class AdminPage {
                         <?php foreach ($jobs as $job): ?>
                             <tr>
                                 <td><?php echo esc_html($job->id); ?></td>
+                                <td><?php echo $this->render_job_source($job); ?></td>
                                 <td><?php echo esc_html($this->get_job_type_label($job->job_type)); ?></td>
                                 <td><?php echo $this->render_status_badge($job->status); ?></td>
                                 <td><?php echo $this->render_progress($job); ?></td>
@@ -356,6 +358,30 @@ class AdminPage {
         }
 
         return '—';
+    }
+
+    /**
+     * Render job source (manual or from schedule)
+     */
+    private function render_job_source(object $job): string {
+        if (!$job->schedule_id) {
+            return '<span style="color: #646970;">' . __('Ręczny eksport', 'woo-data-exporter') . '</span>';
+        }
+
+        // Get schedule name
+        $schedule = \WooExporter\Database\Schedule::get($job->schedule_id);
+        
+        if ($schedule) {
+            $schedule_url = add_query_arg(['page' => 'woo-data-exporter', 'tab' => 'schedules'], admin_url('admin.php'));
+            return sprintf(
+                '<a href="%s" title="%s">🔄 %s</a>',
+                esc_url($schedule_url),
+                esc_attr__('Przejdź do harmonogramów', 'woo-data-exporter'),
+                esc_html($schedule->name)
+            );
+        }
+
+        return '<span style="color: #d63638;">' . __('Harmonogram usunięty', 'woo-data-exporter') . '</span>';
     }
 
     /**
@@ -468,9 +494,6 @@ class AdminPage {
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <button type="button" class="button button-small view-schedule-history-btn" data-schedule-id="<?php echo esc_attr($schedule->id); ?>" title="<?php esc_attr_e('Zobacz historię raportów', 'woo-data-exporter'); ?>">
-                                        <span class="dashicons dashicons-list-view"></span>
-                                    </button>
                                     <button type="button" class="button button-small edit-schedule-btn" data-schedule-id="<?php echo esc_attr($schedule->id); ?>">
                                         <?php esc_html_e('Edytuj', 'woo-data-exporter'); ?>
                                     </button>

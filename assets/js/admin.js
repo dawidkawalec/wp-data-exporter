@@ -33,7 +33,6 @@
             $(document).on('click', '.edit-schedule-btn', this.editSchedule.bind(this));
             $(document).on('click', '.delete-schedule-btn', this.deleteSchedule.bind(this));
             $(document).on('click', '.toggle-schedule-btn', this.toggleSchedule.bind(this));
-            $(document).on('click', '.view-schedule-history-btn', this.viewScheduleHistory.bind(this));
             $(document).on('click', '.schedule-modal-close', this.closeScheduleModal.bind(this));
             $(document).on('submit', '#schedule-form', this.handleScheduleFormSubmit.bind(this));
             $(document).on('change', '#schedule_frequency_type', this.updateFrequencyField.bind(this));
@@ -564,79 +563,6 @@
         },
 
         /**
-         * View schedule history
-         */
-        viewScheduleHistory: function(e) {
-            const scheduleId = $(e.currentTarget).data('schedule-id');
-            
-            $.ajax({
-                url: wooExporterAdmin.ajax_url,
-                type: 'POST',
-                data: {
-                    action: 'get_schedule_history',
-                    nonce: wooExporterAdmin.nonce,
-                    schedule_id: scheduleId
-                },
-                success: function(response) {
-                    if (response.success) {
-                        WooExporter.showScheduleHistory(response.data.jobs);
-                    } else {
-                        alert('Błąd: ' + (response.data.message || 'Nie udało się pobrać historii.'));
-                    }
-                }
-            });
-        },
-
-        /**
-         * Show schedule history in modal
-         */
-        showScheduleHistory: function(jobs) {
-            let html = '<div class="schedule-history-modal">';
-            html += '<h3>Historia Raportów</h3>';
-            
-            if (jobs.length === 0) {
-                html += '<p>Brak wygenerowanych raportów dla tego harmonogramu.</p>';
-            } else {
-                html += '<table class="wp-list-table widefat striped" style="margin-top: 15px;">';
-                html += '<thead><tr><th>Data utworzenia</th><th>Status</th><th>Rekordów</th><th>Akcje</th></tr></thead><tbody>';
-                
-                jobs.forEach(function(job) {
-                    html += '<tr>';
-                    html += '<td>' + job.created_at + '</td>';
-                    html += '<td>' + WooExporter.getStatusBadge(job.status) + '</td>';
-                    html += '<td>' + (job.processed_items || 0) + '</td>';
-                    html += '<td>';
-                    if (job.status === 'completed' && job.file_url_hash) {
-                        const downloadUrl = wooExporterAdmin.ajax_url + '?action=woo_exporter_download&job_id=' + job.id + '&hash=' + job.file_url_hash;
-                        html += '<a href="' + downloadUrl + '" class="button button-small">Pobierz</a>';
-                    }
-                    html += '</td>';
-                    html += '</tr>';
-                });
-                
-                html += '</tbody></table>';
-            }
-            
-            html += '<p style="text-align: center; margin-top: 20px;"><button type="button" class="button" onclick="$(this).closest(\'.schedule-history-modal\').remove();">Zamknij</button></p>';
-            html += '</div>';
-            
-            $('body').append(html);
-        },
-
-        /**
-         * Get status badge HTML
-         */
-        getStatusBadge: function(status) {
-            const badges = {
-                'pending': '<span class="status-badge status-pending">Oczekujące</span>',
-                'processing': '<span class="status-badge status-processing">Przetwarzanie</span>',
-                'completed': '<span class="status-badge status-completed">Ukończone</span>',
-                'failed': '<span class="status-badge status-failed">Błąd</span>'
-            };
-            return badges[status] || status;
-        },
-
-        /**
          * Check job status (for future polling functionality)
          */
         checkJobStatus: function(jobId) {
@@ -664,4 +590,6 @@
     });
 
 })(jQuery);
+
+
 
