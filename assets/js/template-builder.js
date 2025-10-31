@@ -182,6 +182,10 @@
         loadPreview: function() {
             const orderId = $('#preview-order-id').val();
             
+            console.log('loadPreview called, orderId:', orderId);
+            console.log('AJAX URL:', wooExporterAdmin.ajax_url);
+            console.log('Nonce:', wooExporterAdmin.nonce);
+            
             if (!orderId) {
                 $('#preview-status').text('Wpisz ID zamówienia').css('color', '#d63638');
                 return;
@@ -189,26 +193,33 @@
             
             $('#preview-status').html('<span class="woo-exporter-loading"></span> Ładowanie...').css('color', '#646970');
             
+            const requestData = {
+                action: 'preview_template_values',
+                nonce: wooExporterAdmin.nonce,
+                order_id: orderId,
+                fields: JSON.stringify([]) // Empty array as JSON string
+            };
+            
+            console.log('Sending request:', requestData);
+            
             $.ajax({
                 url: wooExporterAdmin.ajax_url,
                 type: 'POST',
-                data: {
-                    action: 'preview_template_values',
-                    nonce: wooExporterAdmin.nonce,
-                    order_id: orderId,
-                    fields: [] // Empty = fetch ALL fields
-                },
+                data: requestData,
                 success: function(response) {
+                    console.log('Preview response:', response);
                     if (response.success) {
                         TemplateBuilder.renderPreviewTable(response.data);
                         $('#preview-status').text('✓ Załadowano zamówienie #' + orderId).css('color', '#00a32a');
                     } else {
+                        console.error('Preview failed:', response.data);
                         $('#preview-status').text('Błąd: ' + (response.data.message || 'Nie znaleziono')).css('color', '#d63638');
                     }
                 },
-                error: function(xhr) {
-                    console.error('Preview error:', xhr.responseText);
-                    $('#preview-status').text('Błąd: ' + xhr.status + ' - Sprawdź console').css('color', '#d63638');
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', xhr, status, error);
+                    console.error('Response text:', xhr.responseText);
+                    $('#preview-status').text('Błąd: ' + xhr.status + ' - Sprawdź console (F12)').css('color', '#d63638');
                 }
             });
         },
