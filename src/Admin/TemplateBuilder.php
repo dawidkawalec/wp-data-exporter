@@ -39,6 +39,14 @@ class TemplateBuilder {
             [],
             WOO_EXPORTER_VERSION
         );
+        
+        // Enqueue template builder CSS
+        wp_enqueue_style(
+            'woo-template-builder',
+            WOO_EXPORTER_PLUGIN_URL . 'assets/css/template-builder.css',
+            ['woo-exporter-admin'],
+            WOO_EXPORTER_VERSION
+        );
 
         // Enqueue builder JS
         wp_enqueue_script(
@@ -85,8 +93,29 @@ class TemplateBuilder {
         $current_order_id = $sample_orders[0] ?? 0;
         
         ?>
-        <div class="wrap template-builder-wrap">
-            <h1><?php echo $template ? esc_html__('Edytuj Szablon', 'woo-data-exporter') : esc_html__('Nowy Szablon Eksportu', 'woo-data-exporter'); ?></h1>
+        <div class="wrap template-builder-wrap woo-exporter-admin">
+            <h1><?php esc_html_e('Eksport Danych WooCommerce', 'woo-data-exporter'); ?></h1>
+            
+            <nav class="nav-tab-wrapper">
+                <a href="?page=woo-data-exporter&tab=new-export" class="nav-tab">
+                    <?php esc_html_e('Nowy Eksport', 'woo-data-exporter'); ?>
+                </a>
+                <a href="?page=woo-data-exporter&tab=history" class="nav-tab">
+                    <?php esc_html_e('Historia Eksportów', 'woo-data-exporter'); ?>
+                </a>
+                <a href="?page=woo-data-exporter&tab=schedules" class="nav-tab">
+                    <?php esc_html_e('Zaplanowane Raporty', 'woo-data-exporter'); ?>
+                </a>
+                <a href="?page=woo-data-exporter&tab=templates" class="nav-tab">
+                    <?php esc_html_e('Szablony Eksportów', 'woo-data-exporter'); ?>
+                </a>
+                <a href="?page=woo-template-builder" class="nav-tab nav-tab-active">
+                    <?php esc_html_e('+ Kreator Szablonu', 'woo-data-exporter'); ?>
+                </a>
+            </nav>
+            
+            <div class="tab-content" style="margin-top: 20px;">
+            <h2><?php echo $template ? esc_html__('Edytuj Szablon', 'woo-data-exporter') : esc_html__('Nowy Szablon Eksportu', 'woo-data-exporter'); ?></h2>
             
             <form id="template-builder-form" class="template-builder-form">
                 <input type="hidden" id="template_id" name="template_id" value="<?php echo esc_attr($template_id); ?>">
@@ -134,14 +163,12 @@ class TemplateBuilder {
                 </div>
 
                 <div class="template-field-picker" style="background: #fff; padding: 20px; margin-bottom: 20px; border: 1px solid #ccd0d4;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <h2 style="margin: 0;"><?php esc_html_e('Wybierz pola do eksportu', 'woo-data-exporter'); ?></h2>
-                        <input type="text" id="field-search" class="regular-text" placeholder="🔍 Szukaj pola..." style="width: 300px;">
-                    </div>
+                    <h2 style="margin-top: 0; margin-bottom: 15px;"><?php esc_html_e('Wybierz pola do eksportu', 'woo-data-exporter'); ?></h2>
                     
-                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;" class="template-picker-grid">
                         <!-- Left: Available Fields with inline preview -->
                         <div class="available-fields-panel">
+                            <input type="text" id="field-search" class="regular-text" placeholder="🔍 Szukaj pola..." style="width: 100%; margin-bottom: 15px;">
                             <div class="fields-list" style="max-height: 600px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;">
                                 <?php foreach ($grouped_fields as $category => $fields): ?>
                                     <div class="field-group" data-category="<?php echo esc_attr($category); ?>">
@@ -195,6 +222,7 @@ class TemplateBuilder {
                     </a>
                 </p>
             </form>
+            </div>
         </div>
         
         <script type="text/javascript">

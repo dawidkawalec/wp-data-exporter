@@ -1,0 +1,61 @@
+/**
+ * Template Builder Responsive Styles
+ */
+
+/* Grid responsive */
+.template-picker-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 1200px) {
+    .template-picker-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Selected fields - always horizontal buttons */
+.selected-field-item {
+    min-height: 60px;
+}
+
+.selected-field-item > div:last-child {
+    display: flex;
+    gap: 5px;
+    flex-shrink: 0;
+    margin-left: 10px;
+}
+
+@media (max-width: 782px) {
+    .template-builder-wrap h1 {
+        font-size: 24px;
+    }
+    
+    .template-basic-info,
+    .template-field-picker,
+    .template-preview-panel {
+        padding: 15px !important;
+    }
+    
+    .available-fields-panel,
+    .selected-fields-panel {
+        font-size: 13px;
+    }
+    
+    .field-item {
+        padding: 6px 0 !important;
+    }
+    
+    .selected-field-item {
+        padding: 8px !important;
+        min-height: auto;
+    }
+    
+    .button-small {
+        font-size: 11px;
+        padding: 2px 8px;
+        height: auto;
+    }
+}
+

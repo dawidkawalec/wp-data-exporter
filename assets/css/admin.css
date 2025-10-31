@@ -432,3 +432,92 @@
     color: #646970;
 }
 
+/* === RESPONSIVE DESIGN === */
+
+/* Tablets */
+@media (max-width: 1024px) {
+    .woo-exporter-tab-new-export {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Mobile */
+@media (max-width: 782px) {
+    /* Tabs */
+    .nav-tab-wrapper .nav-tab {
+        font-size: 13px;
+        padding: 8px 12px;
+    }
+    
+    /* Forms */
+    .export-form .form-table th,
+    .export-form .form-table td {
+        display: block;
+        width: 100% !important;
+        padding: 8px 0;
+    }
+    
+    .export-form .form-table th {
+        padding-bottom: 4px;
+    }
+    
+    .export-form .regular-text,
+    .export-form select {
+        width: 100% !important;
+        max-width: 100%;
+    }
+    
+    /* Tables */
+    .wp-list-table {
+        font-size: 12px;
+    }
+    
+    .wp-list-table th,
+    .wp-list-table td {
+        padding: 8px 4px;
+    }
+    
+    /* Hide less important columns on mobile */
+    .wp-list-table th:nth-child(n+5),
+    .wp-list-table td:nth-child(n+5) {
+        display: none;
+    }
+    
+    /* Buttons */
+    .button-large {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    
+    /* Info boxes */
+    .export-info-boxes {
+        gap: 15px;
+    }
+    
+    .info-box {
+        padding: 15px;
+    }
+    
+    /* Modals */
+    .csv-preview-modal {
+        padding: 10px;
+    }
+    
+    .csv-preview-modal-content {
+        max-width: 100%;
+        width: 100%;
+    }
+    
+    .csv-preview-header h3 {
+        font-size: 16px;
+    }
+    
+    /* Schedule form */
+    #schedule-form .form-table th,
+    #schedule-form .form-table td {
+        display: block;
+        width: 100%;
+    }
+}
+

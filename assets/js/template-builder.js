@@ -91,15 +91,15 @@
             let html = '<div class="selected-fields-items">';
             this.selectedFields.forEach((field, index) => {
                 const alias = this.fieldAliases[field] || this.getDefaultLabel(field);
-                html += '<div class="selected-field-item" data-field="' + field + '" style="padding: 10px; border-bottom: 1px solid #e5e5e5; display: flex; justify-content: space-between; align-items: center;">';
-                html += '<div style="flex: 1;">';
+                html += '<div class="selected-field-item" data-field="' + field + '" style="padding: 10px; border-bottom: 1px solid #e5e5e5; display: flex; justify-content: space-between; align-items: center; min-height: 60px;">';
+                html += '<div style="flex: 1; min-width: 0; overflow: hidden;">';
                 html += '<strong>' + (index + 1) + '.</strong> ';
-                html += '<code style="font-size: 12px;">' + field + '</code><br>';
+                html += '<code style="font-size: 12px; word-break: break-all;">' + field + '</code><br>';
                 html += '<span style="color: #646970; font-size: 12px;">Alias w CSV: <strong>' + alias + '</strong></span>';
                 html += '</div>';
-                html += '<div>';
-                html += '<button type="button" class="button button-small edit-alias-btn" data-field="' + field + '">Zmień alias</button> ';
-                html += '<button type="button" class="button button-small button-link-delete remove-field-btn" data-field="' + field + '">✕</button>';
+                html += '<div style="display: flex; gap: 5px; flex-shrink: 0; margin-left: 10px;">';
+                html += '<button type="button" class="button button-small edit-alias-btn" data-field="' + field + '" style="white-space: nowrap;">Zmień alias</button>';
+                html += '<button type="button" class="button button-small button-link-delete remove-field-btn" data-field="' + field + '" style="min-width: 32px;">✕</button>';
                 html += '</div>';
                 html += '</div>';
             });
