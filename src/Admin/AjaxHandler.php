@@ -35,6 +35,13 @@ class AjaxHandler {
         add_action('wp_ajax_delete_schedule', [$this, 'delete_schedule']);
         add_action('wp_ajax_toggle_schedule', [$this, 'toggle_schedule']);
         add_action('wp_ajax_get_schedule', [$this, 'get_schedule']);
+        
+        // Template actions
+        add_action('wp_ajax_create_template', [$this, 'create_template']);
+        add_action('wp_ajax_update_template', [$this, 'update_template']);
+        add_action('wp_ajax_delete_template', [$this, 'delete_template']);
+        add_action('wp_ajax_duplicate_template', [$this, 'duplicate_template']);
+        add_action('wp_ajax_preview_template_values', [$this, 'preview_template_values']);
     }
 
     /**
@@ -781,5 +788,152 @@ class AjaxHandler {
         $percent = round(($job->processed_items / $job->total_items) * 100);
         return min(100, max(0, $percent));
     }
+
+    /**
+     * Create template
+     */
+    public function create_template(): void {
+        if (!check_ajax_referer('woo_exporter_nonce', 'nonce', false)) {
+            wp_send_json_error(['message' => 'Invalid nonce'], 403);
+        }
+
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error(['message' => 'No permission'], 403);
+        }
+
+        $data = [
+            'name' => sanitize_text_field($_POST['name'] ?? ''),
+            'description' => sanitize_textarea_field($_POST['description'] ?? ''),
+            'selected_fields' => json_decode(stripslashes($_POST['selected_fields'] ?? '[]'), true),
+            'field_aliases' => json_decode(stripslashes($_POST['field_aliases'] ?? '{}'), true),
+            'field_order' => json_decode(stripslashes($_POST['field_order'] ?? '[]'), true),
+        ];
+
+        if (empty($data['name']) || empty($data['selected_fields'])) {
+            wp_send_json_error(['message' => 'Nazwa i pola są wymagane'], 400);
+        }
+
+        $template_id = \WooExporter\Database\Template::create($data);
+
+        if (!$template_id) {
+            wp_send_json_error(['message' => 'Nie udało się utworzyć szablonu'], 500);
+        }
+
+        wp_send_json_success(['message' => 'Szablon utworzony', 'template_id' => $template_id]);
+    }
+
+    /**
+     * Update template
+     */
+    public function update_template(): void {
+        if (!check_ajax_referer('woo_exporter_nonce', 'nonce', false)) {
+            wp_send_json_error(['message' => 'Invalid nonce'], 403);
+        }
+
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error(['message' => 'No permission'], 403);
+        }
+
+        $template_id = absint($_POST['template_id'] ?? 0);
+        
+        if (!$template_id) {
+            wp_send_json_error(['message' => 'Invalid ID'], 400);
+        }
+
+        $data = [
+            'name' => sanitize_text_field($_POST['name'] ?? ''),
+            'description' => sanitize_textarea_field($_POST['description'] ?? ''),
+            'selected_fields' => json_decode(stripslashes($_POST['selected_fields'] ?? '[]'), true),
+            'field_aliases' => json_decode(stripslashes($_POST['field_aliases'] ?? '{}'), true),
+            'field_order' => json_decode(stripslashes($_POST['field_order'] ?? '[]'), true),
+        ];
+
+        $success = \WooExporter\Database\Template::update($template_id, $data);
+
+        if (!$success) {
+            wp_send_json_error(['message' => 'Nie udało się zaktualizować'], 500);
+        }
+
+        wp_send_json_success(['message' => 'Szablon zaktualizowany']);
+    }
+
+    /**
+     * Delete template
+     */
+    public function delete_template(): void {
+        if (!check_ajax_referer('woo_exporter_nonce', 'nonce', false)) {
+            wp_send_json_error(['message' => 'Invalid nonce'], 403);
+        }
+
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error(['message' => 'No permission'], 403);
+        }
+
+        $template_id = absint($_POST['template_id'] ?? 0);
+        
+        if (!$template_id) {
+            wp_send_json_error(['message' => 'Invalid ID'], 400);
+        }
+
+        $success = \WooExporter\Database\Template::delete($template_id);
+
+        if (!$success) {
+            wp_send_json_error(['message' => 'Nie udało się usunąć'], 500);
+        }
+
+        wp_send_json_success(['message' => 'Szablon usunięty']);
+    }
+
+    /**
+     * Duplicate template
+     */
+    public function duplicate_template(): void {
+        if (!check_ajax_referer('woo_exporter_nonce', 'nonce', false)) {
+            wp_send_json_error(['message' => 'Invalid nonce'], 403);
+        }
+
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error(['message' => 'No permission'], 403);
+        }
+
+        $template_id = absint($_POST['template_id'] ?? 0);
+        
+        if (!$template_id) {
+            wp_send_json_error(['message' => 'Invalid ID'], 400);
+        }
+
+        $new_id = \WooExporter\Database\Template::duplicate($template_id);
+
+        if (!$new_id) {
+            wp_send_json_error(['message' => 'Nie udało się zduplikować'], 500);
+        }
+
+        wp_send_json_success(['message' => 'Szablon zduplikowany', 'template_id' => $new_id]);
+    }
+
+    /**
+     * Preview template values
+     */
+    public function preview_template_values(): void {
+        if (!check_ajax_referer('woo_exporter_nonce', 'nonce', false)) {
+            wp_send_json_error(['message' => 'Invalid nonce'], 403);
+        }
+
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error(['message' => 'No permission'], 403);
+        }
+
+        $order_id = absint($_POST['order_id'] ?? 0);
+        $fields = json_decode(stripslashes($_POST['fields'] ?? '[]'), true);
+
+        if (!$order_id || empty($fields)) {
+            wp_send_json_error(['message' => 'Brak ID lub pól'], 400);
+        }
+
+        $values = \WooExporter\Export\MetaScanner::get_sample_values($order_id, $fields);
+
+        wp_send_json_success(['values' => $values]);
+    }
 }
+
 

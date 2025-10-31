@@ -36,6 +36,12 @@
             $(document).on('click', '.schedule-modal-close', this.closeScheduleModal.bind(this));
             $(document).on('submit', '#schedule-form', this.handleScheduleFormSubmit.bind(this));
             $(document).on('change', '#schedule_frequency_type', this.updateFrequencyField.bind(this));
+            
+            // Template events
+            $(document).on('click', '#add-new-template', this.addNewTemplate.bind(this));
+            $(document).on('click', '.edit-template-btn', this.editTemplate.bind(this));
+            $(document).on('click', '.delete-template-btn', this.deleteTemplate.bind(this));
+            $(document).on('click', '.duplicate-template-btn', this.duplicateTemplate.bind(this));
         },
 
         /**
@@ -558,6 +564,86 @@
                     } else {
                         alert('Błąd: ' + (response.data.message || 'Nie udało się zmienić statusu.'));
                     }
+                }
+            });
+        },
+
+        /**
+         * Add new template - redirect to builder
+         */
+        addNewTemplate: function(e) {
+            e.preventDefault();
+            window.location.href = 'admin.php?page=woo-template-builder';
+        },
+
+        /**
+         * Edit template - redirect to builder
+         */
+        editTemplate: function(e) {
+            const templateId = $(e.currentTarget).data('template-id');
+            window.location.href = 'admin.php?page=woo-template-builder&template_id=' + templateId;
+        },
+
+        /**
+         * Delete template
+         */
+        deleteTemplate: function(e) {
+            const $btn = $(e.currentTarget);
+            const templateId = $btn.data('template-id');
+            
+            if (!confirm('Czy na pewno chcesz usunąć ten szablon?')) {
+                return;
+            }
+
+            $.ajax({
+                url: wooExporterAdmin.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'delete_template',
+                    nonce: wooExporterAdmin.nonce,
+                    template_id: templateId
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $btn.closest('tr').fadeOut(400, function() { $(this).remove(); });
+                    } else {
+                        alert('Błąd: ' + (response.data.message || 'Nie udało się usunąć'));
+                    }
+                },
+                error: function() {
+                    alert('Błąd połączenia');
+                }
+            });
+        },
+
+        /**
+         * Duplicate template
+         */
+        duplicateTemplate: function(e) {
+            const $btn = $(e.currentTarget);
+            const templateId = $btn.data('template-id');
+            
+            $btn.prop('disabled', true).text('Duplikowanie...');
+
+            $.ajax({
+                url: wooExporterAdmin.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'duplicate_template',
+                    nonce: wooExporterAdmin.nonce,
+                    template_id: templateId
+                },
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert('Błąd: ' + (response.data.message || 'Nie udało się zduplikować'));
+                        $btn.prop('disabled', false).text('Duplikuj');
+                    }
+                },
+                error: function() {
+                    alert('Błąd połączenia');
+                    $btn.prop('disabled', false).text('Duplikuj');
                 }
             });
         },

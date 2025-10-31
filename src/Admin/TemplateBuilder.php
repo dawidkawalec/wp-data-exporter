@@ -21,6 +21,39 @@ if (!defined('ABSPATH')) {
 class TemplateBuilder {
     public function __construct() {
         add_action('admin_menu', [$this, 'add_submenu_page'], 20);
+        add_action('admin_enqueue_scripts', [$this, 'enqueue_assets']);
+    }
+
+    /**
+     * Enqueue assets for template builder
+     */
+    public function enqueue_assets($hook): void {
+        if ($hook !== 'admin_page_woo-template-builder') {
+            return;
+        }
+
+        // Enqueue admin CSS (reuse)
+        wp_enqueue_style(
+            'woo-exporter-admin',
+            WOO_EXPORTER_PLUGIN_URL . 'assets/css/admin.css',
+            [],
+            WOO_EXPORTER_VERSION
+        );
+
+        // Enqueue builder JS
+        wp_enqueue_script(
+            'woo-template-builder',
+            WOO_EXPORTER_PLUGIN_URL . 'assets/js/template-builder.js',
+            ['jquery'],
+            WOO_EXPORTER_VERSION,
+            true
+        );
+
+        // Localize
+        wp_localize_script('woo-template-builder', 'wooExporterAdmin', [
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('woo_exporter_nonce'),
+        ]);
     }
 
     /**
