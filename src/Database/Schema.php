@@ -90,6 +90,26 @@ class Schema {
         
         dbDelta($sql_schedules);
 
+        // Create templates table
+        $templates_table = $wpdb->prefix . 'export_templates';
+        $sql_templates = "CREATE TABLE IF NOT EXISTS {$templates_table} (
+            id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+            name VARCHAR(255) NOT NULL COMMENT 'Nazwa szablonu',
+            description TEXT NULL COMMENT 'Opis szablonu',
+            selected_fields JSON NOT NULL COMMENT 'Wybrane pola do eksportu (array)',
+            field_aliases JSON NULL COMMENT 'Aliasy kolumn (meta_key => alias)',
+            field_order JSON NULL COMMENT 'Kolejność kolumn (array of meta_keys)',
+            is_global TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Globalny (1) czy per-user (0)',
+            created_by BIGINT(20) UNSIGNED NOT NULL COMMENT 'ID twórcy',
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            INDEX created_by_idx (created_by),
+            INDEX is_global_idx (is_global)
+        ) {$charset_collate};";
+        
+        dbDelta($sql_templates);
+
         // Store database version
         update_option('woo_exporter_db_version', WOO_EXPORTER_VERSION);
     }
@@ -103,15 +123,25 @@ class Schema {
     }
 
     /**
+     * Get templates table name
+     */
+    public static function get_templates_table_name(): string {
+        global $wpdb;
+        return $wpdb->prefix . 'export_templates';
+    }
+
+    /**
      * Drop plugin tables (for uninstall)
      */
     public static function drop_tables(): void {
         global $wpdb;
         $jobs_table = self::get_table_name();
         $schedules_table = self::get_schedules_table_name();
+        $templates_table = self::get_templates_table_name();
         
         $wpdb->query("DROP TABLE IF EXISTS {$jobs_table}");
         $wpdb->query("DROP TABLE IF EXISTS {$schedules_table}");
+        $wpdb->query("DROP TABLE IF EXISTS {$templates_table}");
         
         delete_option('woo_exporter_db_version');
     }

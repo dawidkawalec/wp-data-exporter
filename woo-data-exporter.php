@@ -84,6 +84,7 @@ class Plugin {
         if (is_admin()) {
             new Admin\AdminPage();
             new Admin\AjaxHandler();
+            new Admin\TemplateBuilder();
         }
 
         // Initialize cron workers

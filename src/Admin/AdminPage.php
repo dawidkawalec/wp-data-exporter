@@ -107,6 +107,10 @@ class AdminPage {
                    class="nav-tab <?php echo $active_tab === 'schedules' ? 'nav-tab-active' : ''; ?>">
                     <?php esc_html_e('Zaplanowane Raporty', 'woo-data-exporter'); ?>
                 </a>
+                <a href="?page=<?php echo esc_attr(self::PAGE_SLUG); ?>&tab=templates" 
+                   class="nav-tab <?php echo $active_tab === 'templates' ? 'nav-tab-active' : ''; ?>">
+                    <?php esc_html_e('Szablony Eksportów', 'woo-data-exporter'); ?>
+                </a>
             </nav>
 
             <div class="tab-content">
@@ -115,6 +119,8 @@ class AdminPage {
                     $this->render_new_export_tab();
                 } elseif ($active_tab === 'schedules') {
                     $this->render_schedules_tab();
+                } elseif ($active_tab === 'templates') {
+                    $this->render_templates_tab();
                 } else {
                     $this->render_history_tab();
                 }
@@ -582,6 +588,72 @@ class AdminPage {
                     </div>
                 </div>
             </div>
+        </div>
+        <?php
+    }
+
+    /**
+     * Render templates tab
+     */
+    private function render_templates_tab(): void {
+        $templates = \WooExporter\Database\Template::get_all();
+        ?>
+        <div class="woo-exporter-tab-templates">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0;"><?php esc_html_e('Szablony Eksportów', 'woo-data-exporter'); ?></h2>
+                <button type="button" id="add-new-template" class="button button-primary">
+                    <span class="dashicons dashicons-plus-alt"></span>
+                    <?php esc_html_e('Utwórz Nowy Szablon', 'woo-data-exporter'); ?>
+                </button>
+            </div>
+
+            <div class="templates-info-box" style="background: #e7f3ff; border-left: 4px solid #2271b1; padding: 15px; margin-bottom: 20px;">
+                <p style="margin: 0;">
+                    <strong>💡 Szablony niestandardowe</strong><br>
+                    <?php esc_html_e('Twórz własne raporty wybierając dokładnie te pola, które Cię interesują. Możesz łączyć dane z zamówień, produktów, klientów i niestandardowych pól meta.', 'woo-data-exporter'); ?>
+                </p>
+            </div>
+
+            <?php if (empty($templates)): ?>
+                <div class="no-templates" style="background: #fff; padding: 40px; text-align: center; border: 1px solid #ccd0d4;">
+                    <p style="color: #646970; font-size: 14px; margin: 0;">
+                        <?php esc_html_e('Brak szablonów. Kliknij "Utwórz Nowy Szablon" aby stworzyć własny raport.', 'woo-data-exporter'); ?>
+                    </p>
+                </div>
+            <?php else: ?>
+                <table class="wp-list-table widefat fixed striped">
+                    <thead>
+                        <tr>
+                            <th><?php esc_html_e('Nazwa', 'woo-data-exporter'); ?></th>
+                            <th><?php esc_html_e('Opis', 'woo-data-exporter'); ?></th>
+                            <th><?php esc_html_e('Liczba pól', 'woo-data-exporter'); ?></th>
+                            <th><?php esc_html_e('Utworzony', 'woo-data-exporter'); ?></th>
+                            <th><?php esc_html_e('Akcje', 'woo-data-exporter'); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($templates as $template): ?>
+                            <tr>
+                                <td><strong><?php echo esc_html($template->name); ?></strong></td>
+                                <td><?php echo esc_html($template->description ?: '—'); ?></td>
+                                <td><?php echo count($template->selected_fields); ?> pól</td>
+                                <td><?php echo esc_html(date_i18n(get_option('date_format'), strtotime($template->created_at))); ?></td>
+                                <td>
+                                    <button type="button" class="button button-small edit-template-btn" data-template-id="<?php echo esc_attr($template->id); ?>">
+                                        <?php esc_html_e('Edytuj', 'woo-data-exporter'); ?>
+                                    </button>
+                                    <button type="button" class="button button-small duplicate-template-btn" data-template-id="<?php echo esc_attr($template->id); ?>">
+                                        <?php esc_html_e('Duplikuj', 'woo-data-exporter'); ?>
+                                    </button>
+                                    <button type="button" class="button button-small button-link-delete delete-template-btn" data-template-id="<?php echo esc_attr($template->id); ?>">
+                                        <?php esc_html_e('Usuń', 'woo-data-exporter'); ?>
+                                    </button>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
         </div>
         <?php
     }
