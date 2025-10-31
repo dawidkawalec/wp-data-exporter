@@ -596,27 +596,17 @@ class AjaxHandler {
         $data = $this->sanitize_schedule_data($_POST);
         
         if (is_wp_error($data)) {
-            error_log('WOO_EXPORTER: Schedule validation error: ' . $data->get_error_message());
             wp_send_json_error(['message' => $data->get_error_message()], 400);
         }
-
-        error_log('WOO_EXPORTER: Creating schedule with data: ' . json_encode($data));
         
         $schedule_id = \WooExporter\Database\Schedule::create($data);
 
         if (!$schedule_id) {
-            // Check database health
-            $health = \WooExporter\Database\Migration::check_health();
-            error_log('WOO_EXPORTER: Schedule creation failed. DB Health: ' . json_encode($health));
-            error_log('WOO_EXPORTER: Last DB error: ' . $GLOBALS['wpdb']->last_error);
-            
+            error_log('WOO_EXPORTER: Schedule creation failed. DB error: ' . $GLOBALS['wpdb']->last_error);
             wp_send_json_error([
-                'message' => __('Nie udało się utworzyć harmonogramu.', 'woo-data-exporter') . ' ' . 
-                             __('Sprawdź logi lub spróbuj dezaktywować i aktywować wtyczkę.', 'woo-data-exporter')
+                'message' => __('Nie udało się utworzyć harmonogramu.', 'woo-data-exporter')
             ], 500);
         }
-
-        error_log('WOO_EXPORTER: Schedule #' . $schedule_id . ' created successfully');
 
         wp_send_json_success([
             'message' => __('Harmonogram został utworzony.', 'woo-data-exporter'),
@@ -821,16 +811,11 @@ class AjaxHandler {
      * Create template
      */
     public function create_template(): void {
-        error_log('WOO_EXPORTER: create_template called');
-        error_log('WOO_EXPORTER: POST data: ' . print_r($_POST, true));
-        
         if (!check_ajax_referer('woo_exporter_nonce', 'nonce', false)) {
-            error_log('WOO_EXPORTER: Nonce check failed');
             wp_send_json_error(['message' => 'Invalid nonce'], 403);
         }
 
         if (!current_user_can('manage_woocommerce')) {
-            error_log('WOO_EXPORTER: Permission check failed');
             wp_send_json_error(['message' => 'No permission'], 403);
         }
 
@@ -842,21 +827,17 @@ class AjaxHandler {
             'field_order' => json_decode(stripslashes($_POST['field_order'] ?? '[]'), true),
         ];
 
-        error_log('WOO_EXPORTER: Parsed data: ' . print_r($data, true));
-
         if (empty($data['name']) || empty($data['selected_fields'])) {
-            error_log('WOO_EXPORTER: Validation failed - name or fields empty');
             wp_send_json_error(['message' => 'Nazwa i pola są wymagane'], 400);
         }
 
         $template_id = \WooExporter\Database\Template::create($data);
 
         if (!$template_id) {
-            error_log('WOO_EXPORTER: Template::create() returned false. DB error: ' . $GLOBALS['wpdb']->last_error);
-            wp_send_json_error(['message' => 'Nie udało się utworzyć szablonu. Sprawdź logi.'], 500);
+            error_log('WOO_EXPORTER: Template creation failed. DB error: ' . $GLOBALS['wpdb']->last_error);
+            wp_send_json_error(['message' => 'Nie udało się utworzyć szablonu'], 500);
         }
 
-        error_log('WOO_EXPORTER: Template created successfully, ID: ' . $template_id);
         wp_send_json_success(['message' => 'Szablon utworzony', 'template_id' => $template_id]);
     }
 
