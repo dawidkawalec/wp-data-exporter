@@ -25,6 +25,8 @@ class AjaxHandler {
         add_action('wp_ajax_create_export_job', [$this, 'create_export_job']);
         add_action('wp_ajax_get_job_status', [$this, 'get_job_status']);
         add_action('wp_ajax_cancel_export_job', [$this, 'cancel_export_job']);
+        add_action('wp_ajax_delete_export_job', [$this, 'delete_export_job']);
+        add_action('wp_ajax_preview_export_csv', [$this, 'preview_export_csv']);
     }
 
     /**
@@ -221,6 +223,165 @@ class AjaxHandler {
     }
 
     /**
+     * Delete export job and associated file
+     */
+    public function delete_export_job(): void {
+        // Verify nonce
+        if (!check_ajax_referer('woo_exporter_nonce', 'nonce', false)) {
+            wp_send_json_error([
+                'message' => __('Nieprawidłowy token bezpieczeństwa.', 'woo-data-exporter')
+            ], 403);
+        }
+
+        // Get job ID
+        $job_id = isset($_POST['job_id']) ? absint($_POST['job_id']) : 0;
+
+        if (!$job_id) {
+            wp_send_json_error([
+                'message' => __('Nieprawidłowe ID zadania.', 'woo-data-exporter')
+            ], 400);
+        }
+
+        // Get job
+        $job = Job::get($job_id);
+
+        if (!$job) {
+            wp_send_json_error([
+                'message' => __('Zadanie nie zostało znalezione.', 'woo-data-exporter')
+            ], 404);
+        }
+
+        // Check permissions
+        if (!$this->user_can_delete_job($job)) {
+            wp_send_json_error([
+                'message' => __('Nie masz uprawnień do usunięcia tego zadania.', 'woo-data-exporter')
+            ], 403);
+        }
+
+        // Delete file if exists
+        if ($job->file_path && file_exists($job->file_path)) {
+            @unlink($job->file_path);
+        }
+
+        // Delete job from database
+        global $wpdb;
+        $table_name = \WooExporter\Database\Schema::get_table_name();
+        $deleted = $wpdb->delete($table_name, ['id' => $job_id], ['%d']);
+
+        if ($deleted === false) {
+            wp_send_json_error([
+                'message' => __('Nie udało się usunąć zadania z bazy danych.', 'woo-data-exporter')
+            ], 500);
+        }
+
+        wp_send_json_success([
+            'message' => __('Zadanie i plik zostały usunięte.', 'woo-data-exporter')
+        ]);
+    }
+
+    /**
+     * Preview CSV file content
+     */
+    public function preview_export_csv(): void {
+        // Verify nonce
+        if (!check_ajax_referer('woo_exporter_nonce', 'nonce', false)) {
+            wp_send_json_error([
+                'message' => __('Nieprawidłowy token bezpieczeństwa.', 'woo-data-exporter')
+            ], 403);
+        }
+
+        // Get job ID
+        $job_id = isset($_POST['job_id']) ? absint($_POST['job_id']) : 0;
+
+        if (!$job_id) {
+            wp_send_json_error([
+                'message' => __('Nieprawidłowe ID zadania.', 'woo-data-exporter')
+            ], 400);
+        }
+
+        // Get job
+        $job = Job::get($job_id);
+
+        if (!$job) {
+            wp_send_json_error([
+                'message' => __('Zadanie nie zostało znalezione.', 'woo-data-exporter')
+            ], 404);
+        }
+
+        // Check permissions
+        if (!$this->user_can_view_job($job)) {
+            wp_send_json_error([
+                'message' => __('Nie masz uprawnień do przeglądania tego zadania.', 'woo-data-exporter')
+            ], 403);
+        }
+
+        // Check if file exists
+        if (!$job->file_path || !file_exists($job->file_path)) {
+            wp_send_json_error([
+                'message' => __('Plik nie został znaleziony.', 'woo-data-exporter')
+            ], 404);
+        }
+
+        // Read first 100 rows of CSV
+        try {
+            $csv_data = $this->read_csv_preview($job->file_path, 100);
+            
+            wp_send_json_success([
+                'headers' => $csv_data['headers'] ?? [],
+                'rows' => $csv_data['rows'] ?? [],
+                'total_rows' => $csv_data['total_rows'] ?? 0
+            ]);
+        } catch (\Exception $e) {
+            wp_send_json_error([
+                'message' => __('Błąd podczas odczytu pliku CSV.', 'woo-data-exporter')
+            ], 500);
+        }
+    }
+
+    /**
+     * Read CSV file preview
+     *
+     * @param string $file_path Path to CSV file
+     * @param int $limit Number of rows to read
+     * @return array CSV data
+     */
+    private function read_csv_preview(string $file_path, int $limit = 100): array {
+        $file = fopen($file_path, 'r');
+        if (!$file) {
+            throw new \Exception('Cannot open file');
+        }
+
+        // Read header
+        $headers = fgetcsv($file);
+        if (!$headers) {
+            fclose($file);
+            throw new \Exception('No headers found');
+        }
+
+        // Read rows
+        $rows = [];
+        $count = 0;
+        while (($row = fgetcsv($file)) !== false && $count < $limit) {
+            $rows[] = $row;
+            $count++;
+        }
+
+        // Count total rows
+        $total_rows = $count;
+        while (fgetcsv($file) !== false) {
+            $total_rows++;
+        }
+
+        fclose($file);
+
+        return [
+            'headers' => $headers,
+            'rows' => $rows,
+            'total_rows' => $total_rows + 1 // +1 for header
+        ];
+    }
+
+    /**
      * Sanitize filters array
      *
      * @param array $filters Raw filters
@@ -283,6 +444,27 @@ class AjaxHandler {
     private function user_can_cancel_job(object $job): bool {
         $current_user_id = get_current_user_id();
 
+        if (current_user_can('manage_options')) {
+            return true;
+        }
+
+        if ($current_user_id === (int) $job->requester_id) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if user can delete job
+     *
+     * @param object $job Job object
+     * @return bool Can delete or not
+     */
+    private function user_can_delete_job(object $job): bool {
+        $current_user_id = get_current_user_id();
+
+        // Only admins or job owner can delete
         if (current_user_can('manage_options')) {
             return true;
         }

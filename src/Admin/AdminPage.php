@@ -218,6 +218,21 @@ class AdminPage {
         <div class="woo-exporter-tab-history">
             <h2><?php esc_html_e('Historia Eksportów', 'woo-data-exporter'); ?></h2>
 
+            <!-- CSV Preview Modal -->
+            <div id="csv-preview-modal" class="csv-preview-modal" style="display: none;">
+                <div class="csv-preview-modal-content">
+                    <div class="csv-preview-header">
+                        <h3><?php esc_html_e('Podgląd CSV', 'woo-data-exporter'); ?></h3>
+                        <button type="button" class="csv-preview-close">&times;</button>
+                    </div>
+                    <div class="csv-preview-info"></div>
+                    <div class="csv-preview-body">
+                        <div class="csv-preview-loading"><?php esc_html_e('Ładowanie...', 'woo-data-exporter'); ?></div>
+                        <div class="csv-preview-table-wrapper"></div>
+                    </div>
+                </div>
+            </div>
+
             <?php if (empty($jobs)): ?>
                 <p class="no-jobs">
                     <?php esc_html_e('Brak eksportów w historii.', 'woo-data-exporter'); ?>
@@ -343,6 +358,13 @@ class AdminPage {
                 esc_url($download_url),
                 __('Pobierz', 'woo-data-exporter')
             );
+
+            // Preview button
+            $actions[] = sprintf(
+                '<button type="button" class="button button-small preview-export-btn" data-job-id="%d">%s</button>',
+                $job->id,
+                __('Podgląd', 'woo-data-exporter')
+            );
         }
 
         if ($job->status === Job::STATUS_FAILED && $job->error_message) {
@@ -352,6 +374,13 @@ class AdminPage {
                 __('Zobacz błąd', 'woo-data-exporter')
             );
         }
+
+        // Delete button (for all statuses)
+        $actions[] = sprintf(
+            '<button type="button" class="button button-small button-link-delete delete-export-btn" data-job-id="%d">%s</button>',
+            $job->id,
+            __('Usuń', 'woo-data-exporter')
+        );
 
         return implode(' ', $actions);
     }

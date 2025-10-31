@@ -222,3 +222,152 @@
     100% { transform: rotate(360deg); }
 }
 
+/* CSV Preview Modal */
+.csv-preview-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.csv-preview-modal-content {
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.3);
+    max-width: 95%;
+    width: 1200px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.csv-preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.csv-preview-header h3 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.csv-preview-close {
+    background: none;
+    border: none;
+    font-size: 32px;
+    line-height: 1;
+    color: #666;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.csv-preview-close:hover {
+    color: #d63638;
+}
+
+.csv-preview-info {
+    padding: 15px 20px;
+    background: #f0f0f1;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.csv-preview-info p {
+    margin: 0;
+    color: #646970;
+}
+
+.csv-preview-body {
+    padding: 20px;
+    overflow-y: auto;
+    max-height: 500px;
+    min-height: 300px;
+}
+
+.csv-preview-loading {
+    text-align: center;
+    padding: 40px;
+    color: #646970;
+    font-size: 16px;
+}
+
+.csv-preview-table-wrapper {
+    overflow-x: auto;
+}
+
+.csv-preview-table-wrapper table {
+    margin: 0;
+    font-size: 13px;
+}
+
+.csv-preview-table-wrapper th,
+.csv-preview-table-wrapper td {
+    padding: 8px 12px;
+    white-space: nowrap;
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.csv-preview-table-wrapper th {
+    background: #f0f0f1;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.csv-preview-table-wrapper tbody tr:hover {
+    background: #f6f7f7;
+}
+
+.csv-preview-table-wrapper .error {
+    color: #d63638;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Delete button styling */
+.delete-export-btn {
+    color: #b32d2e !important;
+}
+
+.delete-export-btn:hover {
+    color: #d63638 !important;
+}
+
+/* Responsive Modal */
+@media (max-width: 782px) {
+    .csv-preview-modal-content {
+        max-width: 100%;
+        width: 100%;
+        margin: 10px;
+    }
+    
+    .csv-preview-body {
+        max-height: 60vh;
+    }
+    
+    .csv-preview-table-wrapper th,
+    .csv-preview-table-wrapper td {
+        padding: 6px 8px;
+        font-size: 12px;
+        max-width: 200px;
+    }
+}
+

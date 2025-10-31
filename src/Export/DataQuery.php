@@ -43,17 +43,12 @@ class DataQuery {
 
         $where_sql = implode(' AND ', $where_clauses);
 
-        // TODO: Replace 'TODO_FIND_MARKETING_CONSENT' with actual field location
-        // Possible locations:
-        // - wp_postmeta (order meta): pm_consent.meta_value WHERE pm_consent.meta_key = 'zgoda_marketingowa'
-        // - wp_usermeta (user meta): um.meta_value WHERE um.meta_key = 'zgoda_marketingowa'
-        // - Custom table from another plugin
         $sql = "
             SELECT 
                 MAX(pm_email.meta_value) as email,
                 MAX(pm_first_name.meta_value) as first_name,
                 MAX(pm_last_name.meta_value) as last_name,
-                'TODO_FIND_MARKETING_CONSENT' as zgoda_marketingowa,
+                MAX(pm_consent.meta_value) as zgoda_marketingowa,
                 SUM(pm_total.meta_value) as total_spent,
                 COUNT(DISTINCT p.ID) as order_count,
                 MAX(p.post_date) as last_order_date
@@ -62,6 +57,7 @@ class DataQuery {
             LEFT JOIN {$wpdb->postmeta} pm_first_name ON p.ID = pm_first_name.post_id AND pm_first_name.meta_key = '_billing_first_name'
             LEFT JOIN {$wpdb->postmeta} pm_last_name ON p.ID = pm_last_name.post_id AND pm_last_name.meta_key = '_billing_last_name'
             LEFT JOIN {$wpdb->postmeta} pm_total ON p.ID = pm_total.post_id AND pm_total.meta_key = '_order_total'
+            LEFT JOIN {$wpdb->postmeta} pm_consent ON p.ID = pm_consent.post_id AND pm_consent.meta_key = '_wc_order_attribution_utm_marketing_tactic'
             WHERE {$where_sql}
             AND pm_email.meta_value IS NOT NULL
             AND pm_email.meta_value != ''
@@ -132,7 +128,6 @@ class DataQuery {
 
         $where_sql = implode(' AND ', $where_clauses);
 
-        // TODO: Replace 'TODO_FIND_MARKETING_CONSENT' with actual field location
         $sql = "
             SELECT 
                 p.ID as order_id,
@@ -150,7 +145,7 @@ class DataQuery {
                 oim_qty.meta_value as item_quantity,
                 oim_total.meta_value as item_total,
                 pm_coupons.meta_value as coupons_used,
-                'TODO_FIND_MARKETING_CONSENT' as zgoda_marketingowa
+                pm_consent.meta_value as zgoda_marketingowa
             FROM {$wpdb->posts} p
             LEFT JOIN {$wpdb->prefix}woocommerce_order_items oi ON p.ID = oi.order_id AND oi.order_item_type = 'line_item'
             LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta oim_qty ON oi.order_item_id = oim_qty.order_item_id AND oim_qty.meta_key = '_qty'
@@ -165,6 +160,7 @@ class DataQuery {
             LEFT JOIN {$wpdb->postmeta} pm_postcode ON p.ID = pm_postcode.post_id AND pm_postcode.meta_key = '_billing_postcode'
             LEFT JOIN {$wpdb->postmeta} pm_customer_id ON p.ID = pm_customer_id.post_id AND pm_customer_id.meta_key = '_customer_user'
             LEFT JOIN {$wpdb->postmeta} pm_coupons ON p.ID = pm_coupons.post_id AND pm_coupons.meta_key = '_used_coupons'
+            LEFT JOIN {$wpdb->postmeta} pm_consent ON p.ID = pm_consent.post_id AND pm_consent.meta_key = '_wc_order_attribution_utm_marketing_tactic'
             WHERE {$where_sql}
             ORDER BY p.post_date DESC, oi.order_item_id ASC
             LIMIT %d OFFSET %d
