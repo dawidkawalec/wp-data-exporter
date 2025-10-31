@@ -219,6 +219,16 @@ class TemplateBuilder {
                 nonce: templateBuilderData.nonce
             };
         </script>
+        
+        <script type="text/javascript">
+        <?php 
+        // Inline JS (fallback if enqueue doesn't work)
+        $js_file = WOO_EXPORTER_PLUGIN_DIR . 'assets/js/template-builder.js';
+        if (file_exists($js_file)) {
+            echo file_get_contents($js_file);
+        }
+        ?>
+        </script>
         <?php
     }
 }
