@@ -175,9 +175,9 @@ class TemplateBuilder {
                         <span id="preview-status" style="margin-left: 10px; color: #646970;"></span>
                     </div>
 
-                    <div id="preview-table-container" style="overflow-x: auto; max-height: 400px; overflow-y: auto;">
+                    <div id="preview-table-container" style="overflow-x: auto; max-height: 400px; overflow-y: auto; border: 1px solid #ddd;">
                         <p style="text-align: center; color: #646970; padding: 40px;">
-                            <?php esc_html_e('Zaznacz pola i kliknij "Załaduj" aby zobaczyć przykładowe dane', 'woo-data-exporter'); ?>
+                            <?php esc_html_e('Kliknij "Załaduj" aby zobaczyć wszystkie dostępne pola z przykładowego zamówienia', 'woo-data-exporter'); ?>
                         </p>
                     </div>
                     

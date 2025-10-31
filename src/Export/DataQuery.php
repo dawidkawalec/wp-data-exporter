@@ -284,15 +284,29 @@ class DataQuery {
         $where_sql = implode(' AND ', $where_clauses);
 
         // Build dynamic SELECT and JOINs
-        $select_parts = ['p.ID as order_id'];
+        $select_parts = [];
         $joins = [];
         $join_counter = 0;
 
         foreach ($template->selected_fields as $field) {
-            $alias = 'pm_' . $join_counter;
-            $select_parts[] = "{$alias}.meta_value as `{$field}`";
-            $joins[] = "LEFT JOIN {$wpdb->postmeta} {$alias} ON p.ID = {$alias}.post_id AND {$alias}.meta_key = '{$field}'";
-            $join_counter++;
+            // Handle basic order fields (from posts table, not meta)
+            if ($field === 'order_id') {
+                $select_parts[] = "p.ID as order_id";
+            } elseif ($field === 'order_date') {
+                $select_parts[] = "p.post_date as order_date";
+            } elseif ($field === 'order_status') {
+                $select_parts[] = "p.post_status as order_status";
+            } elseif ($field === 'order_total') {
+                $alias = 'pm_total';
+                $select_parts[] = "{$alias}.meta_value as order_total";
+                $joins[] = "LEFT JOIN {$wpdb->postmeta} {$alias} ON p.ID = {$alias}.post_id AND {$alias}.meta_key = '_order_total'";
+            } else {
+                // Meta fields
+                $alias = 'pm_' . $join_counter;
+                $select_parts[] = "{$alias}.meta_value as `{$field}`";
+                $joins[] = "LEFT JOIN {$wpdb->postmeta} {$alias} ON p.ID = {$alias}.post_id AND {$alias}.meta_key = '{$field}'";
+                $join_counter++;
+            }
         }
 
         $select_sql = implode(', ', $select_parts);

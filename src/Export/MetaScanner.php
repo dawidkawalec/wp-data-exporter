@@ -57,21 +57,24 @@ class MetaScanner {
             'custom' => []
         ];
 
+        // Add basic order fields first
+        $grouped['order'] = ['order_id', 'order_date', 'order_status', 'order_total'];
+        
         foreach ($meta_keys as $key) {
             // Billing fields
-            if (str_starts_with($key, '_billing_')) {
+            if (substr($key, 0, 9) === '_billing_') {
                 $grouped['billing'][] = $key;
             }
             // Shipping fields
-            elseif (str_starts_with($key, '_shipping_')) {
+            elseif (substr($key, 0, 10) === '_shipping_') {
                 $grouped['shipping'][] = $key;
             }
             // Payment fields
-            elseif (str_contains($key, 'payment') || str_contains($key, 'transaction')) {
+            elseif (strpos($key, 'payment') !== false || strpos($key, 'transaction') !== false) {
                 $grouped['payment'][] = $key;
             }
             // WooCommerce internal
-            elseif (str_starts_with($key, '_order_') || str_starts_with($key, '_wc_') || str_starts_with($key, 'wc_')) {
+            elseif (substr($key, 0, 7) === '_order_' || substr($key, 0, 4) === '_wc_' || substr($key, 0, 3) === 'wc_') {
                 $grouped['woocommerce'][] = $key;
             }
             // Order basic
@@ -94,36 +97,77 @@ class MetaScanner {
      * Get sample values for meta keys from specific order
      *
      * @param int $order_id Order ID
-     * @param array $meta_keys Meta keys to fetch
+     * @param array $meta_keys Meta keys to fetch (if empty, fetch ALL)
      * @return array Meta key => value pairs
      */
-    public static function get_sample_values(int $order_id, array $meta_keys): array {
+    public static function get_sample_values(int $order_id, array $meta_keys = []): array {
         global $wpdb;
 
-        if (empty($meta_keys)) {
+        // Get order basic data
+        $order = $wpdb->get_row($wpdb->prepare("
+            SELECT ID as order_id, post_date as order_date, post_status as order_status
+            FROM {$wpdb->posts}
+            WHERE ID = %d AND post_type = 'shop_order'
+        ", $order_id), ARRAY_A);
+
+        if (!$order) {
             return [];
         }
 
-        $placeholders = implode(',', array_fill(0, count($meta_keys), '%s'));
+        $samples = [
+            'order_id' => $order['order_id'],
+            'order_date' => $order['order_date'],
+            'order_status' => str_replace('wc-', '', $order['order_status'])
+        ];
+
+        // Get order_total from meta
+        $order_total = $wpdb->get_var($wpdb->prepare("
+            SELECT meta_value FROM {$wpdb->postmeta}
+            WHERE post_id = %d AND meta_key = '_order_total'
+        ", $order_id));
         
-        $query = $wpdb->prepare("
-            SELECT meta_key, meta_value
-            FROM {$wpdb->postmeta}
-            WHERE post_id = %d
-            AND meta_key IN ({$placeholders})
-        ", array_merge([$order_id], $meta_keys));
+        $samples['order_total'] = $order_total ?: '';
 
-        $results = $wpdb->get_results($query);
+        // If specific keys requested
+        if (!empty($meta_keys)) {
+            $meta_keys_filtered = array_filter($meta_keys, function($k) {
+                return !in_array($k, ['order_id', 'order_date', 'order_status', 'order_total']);
+            });
+            
+            if (!empty($meta_keys_filtered)) {
+                $placeholders = implode(',', array_fill(0, count($meta_keys_filtered), '%s'));
+                
+                $query = $wpdb->prepare("
+                    SELECT meta_key, meta_value
+                    FROM {$wpdb->postmeta}
+                    WHERE post_id = %d
+                    AND meta_key IN ({$placeholders})
+                ", array_merge([$order_id], $meta_keys_filtered));
 
-        $samples = [];
-        foreach ($results as $row) {
-            $samples[$row->meta_key] = $row->meta_value;
-        }
+                $results = $wpdb->get_results($query);
 
-        // Add empty values for keys not found
-        foreach ($meta_keys as $key) {
-            if (!isset($samples[$key])) {
-                $samples[$key] = '';
+                foreach ($results as $row) {
+                    $samples[$row->meta_key] = $row->meta_value;
+                }
+
+                // Add empty values for keys not found
+                foreach ($meta_keys_filtered as $key) {
+                    if (!isset($samples[$key])) {
+                        $samples[$key] = '';
+                    }
+                }
+            }
+        } else {
+            // Fetch ALL meta for preview
+            $all_meta = $wpdb->get_results($wpdb->prepare("
+                SELECT meta_key, meta_value
+                FROM {$wpdb->postmeta}
+                WHERE post_id = %d
+                ORDER BY meta_key
+            ", $order_id));
+
+            foreach ($all_meta as $row) {
+                $samples[$row->meta_key] = $row->meta_value;
             }
         }
 

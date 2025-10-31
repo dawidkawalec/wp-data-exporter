@@ -195,13 +195,13 @@
         },
 
         /**
-         * Load preview
+         * Load preview - shows ALL fields from order
          */
         loadPreview: function() {
             const orderId = $('#preview-order-id').val();
             
-            if (!orderId || this.selectedFields.length === 0) {
-                $('#preview-status').text('Wybierz pola i wpisz ID zamówienia').css('color', '#d63638');
+            if (!orderId) {
+                $('#preview-status').text('Wpisz ID zamówienia').css('color', '#d63638');
                 return;
             }
             
@@ -214,7 +214,7 @@
                     action: 'preview_template_values',
                     nonce: wooExporterAdmin.nonce,
                     order_id: orderId,
-                    fields: this.selectedFields
+                    fields: [] // Empty = fetch ALL fields
                 },
                 success: function(response) {
                     if (response.success) {
@@ -224,35 +224,43 @@
                         $('#preview-status').text('Błąd: ' + (response.data.message || 'Nie znaleziono')).css('color', '#d63638');
                     }
                 },
-                error: function() {
-                    $('#preview-status').text('Błąd połączenia').css('color', '#d63638');
+                error: function(xhr) {
+                    console.error('Preview error:', xhr.responseText);
+                    $('#preview-status').text('Błąd: ' + xhr.status + ' - Sprawdź console').css('color', '#d63638');
                 }
             });
         },
 
         /**
-         * Render preview table
+         * Render preview table - shows ALL fields
          */
         renderPreviewTable: function(data) {
             const values = data.values || {};
             
             let html = '<table class="wp-list-table widefat striped">';
-            html += '<thead><tr><th>Meta Key</th><th>Alias w CSV</th><th>Przykładowa wartość</th></tr></thead>';
+            html += '<thead><tr>';
+            html += '<th style="width: 40px;">✓</th>';
+            html += '<th style="width: 35%;">Meta Key</th>';
+            html += '<th style="width: 65%;">Przykładowa wartość</th>';
+            html += '</tr></thead>';
             html += '<tbody>';
             
-            this.selectedFields.forEach(field => {
-                const alias = this.fieldAliases[field] || this.getDefaultLabel(field);
-                const value = values[field] || '(pusta)';
-                const displayValue = value.length > 100 ? value.substring(0, 100) + '...' : value;
+            // Show ALL values from order
+            for (const [field, value] of Object.entries(values)) {
+                const isSelected = this.selectedFields.includes(field);
+                const displayValue = value ? (value.length > 150 ? value.substring(0, 150) + '...' : value) : '(pusta)';
                 
-                html += '<tr>';
-                html += '<td><code>' + field + '</code></td>';
-                html += '<td><strong>' + alias + '</strong></td>';
-                html += '<td style="color: #646970;">' + this.escapeHtml(displayValue) + '</td>';
+                html += '<tr' + (isSelected ? ' style="background: #e7f3ff;"' : '') + '>';
+                html += '<td style="text-align: center;">';
+                html += isSelected ? '<span style="color: #00a32a;">✓</span>' : '';
+                html += '</td>';
+                html += '<td><code style="font-size: 11px;">' + this.escapeHtml(field) + '</code></td>';
+                html += '<td style="color: #646970; font-size: 12px;">' + this.escapeHtml(displayValue) + '</td>';
                 html += '</tr>';
-            });
+            }
             
             html += '</tbody></table>';
+            html += '<p style="margin-top: 10px; color: #646970; font-size: 12px;">✓ = Pole wybrane do eksportu | Zaznacz pola z lewej strony aby dodać do szablonu</p>';
             
             $('#preview-table-container').html(html);
         },

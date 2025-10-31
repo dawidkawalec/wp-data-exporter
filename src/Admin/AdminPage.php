@@ -44,6 +44,43 @@ class AdminPage {
             'dashicons-download',
             56
         );
+        
+        // Add submenus for easy access
+        add_submenu_page(
+            self::PAGE_SLUG,
+            __('Nowy Eksport', 'woo-data-exporter'),
+            __('Nowy Eksport', 'woo-data-exporter'),
+            'manage_woocommerce',
+            self::PAGE_SLUG . '&tab=new-export',
+            [$this, 'render_page']
+        );
+        
+        add_submenu_page(
+            self::PAGE_SLUG,
+            __('Historia Eksportów', 'woo-data-exporter'),
+            __('Historia', 'woo-data-exporter'),
+            'manage_woocommerce',
+            self::PAGE_SLUG . '&tab=history',
+            [$this, 'render_page']
+        );
+        
+        add_submenu_page(
+            self::PAGE_SLUG,
+            __('Zaplanowane Raporty', 'woo-data-exporter'),
+            __('Harmonogramy', 'woo-data-exporter'),
+            'manage_woocommerce',
+            self::PAGE_SLUG . '&tab=schedules',
+            [$this, 'render_page']
+        );
+        
+        add_submenu_page(
+            self::PAGE_SLUG,
+            __('Szablony Eksportów', 'woo-data-exporter'),
+            __('Szablony', 'woo-data-exporter'),
+            'manage_woocommerce',
+            self::PAGE_SLUG . '&tab=templates',
+            [$this, 'render_page']
+        );
     }
 
     /**
