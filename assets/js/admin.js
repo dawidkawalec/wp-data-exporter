@@ -491,6 +491,10 @@
             const action = scheduleId ? 'update_schedule' : 'create_schedule';
             
             const jobType = $('#schedule_job_type').val();
+            const startDate = $('#schedule_start_date').val();
+            const startTime = $('#schedule_start_time').val() || '00:00';
+            const startDateTime = startDate + ' ' + startTime + ':00';
+            
             const formData = {
                 action: action,
                 nonce: wooExporterAdmin.nonce,
@@ -499,7 +503,7 @@
                 job_type: jobType,
                 frequency_type: $('#schedule_frequency_type').val(),
                 frequency_value: $('#schedule_frequency_value').val(),
-                start_date: $('#schedule_start_date').val(),
+                start_date: startDateTime,
                 notification_email: $('#schedule_email').val()
             };
             

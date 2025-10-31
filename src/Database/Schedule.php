@@ -54,10 +54,20 @@ class Schedule {
             'created_by' => $data['created_by'] ?? get_current_user_id(),
         ];
 
+        $format = ['%s', '%s']; // name, job_type
+        
+        if ($insert_data['template_id'] !== null) {
+            $format[] = '%d'; // template_id
+        } else {
+            $format[] = '%s'; // template_id (NULL as string)
+        }
+        
+        $format = array_merge($format, ['%s', '%d', '%s', '%s', '%s', '%s', '%d', '%d']); // rest
+        
         $result = $wpdb->insert(
             $table_name,
             $insert_data,
-            ['%s', '%s', '%d', '%s', '%d', '%s', '%s', '%s', '%s', '%d', '%d']
+            $format
         );
 
         return $result !== false ? $wpdb->insert_id : false;
@@ -258,18 +268,19 @@ class Schedule {
     /**
      * Calculate next run date from start date
      *
-     * @param string $start_date Start date (Y-m-d)
+     * @param string $start_date Start date (Y-m-d or Y-m-d H:i:s)
      * @param string $frequency_type Frequency type
      * @param int $frequency_value Frequency value
      * @return string Next run datetime (Y-m-d H:i:s)
      */
     private static function calculate_next_run(string $start_date, string $frequency_type, int $frequency_value): string {
+        // Support datetime or just date
         $start = new \DateTime($start_date);
         $now = new \DateTime(current_time('Y-m-d H:i:s'));
 
         // If start date is in the future, use it
         if ($start > $now) {
-            return $start->format('Y-m-d') . ' 00:00:00';
+            return $start->format('Y-m-d H:i:s');
         }
 
         // Otherwise calculate next occurrence from now

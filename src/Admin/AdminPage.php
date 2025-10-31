@@ -655,9 +655,11 @@ class AdminPage {
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th><label for="schedule_start_date"><?php esc_html_e('Data rozpoczęcia', 'woo-data-exporter'); ?> *</label></th>
+                                    <th><label for="schedule_start_date"><?php esc_html_e('Data i godzina rozpoczęcia', 'woo-data-exporter'); ?> *</label></th>
                                     <td>
-                                        <input type="date" id="schedule_start_date" name="start_date" class="regular-text" required />
+                                        <input type="date" id="schedule_start_date" name="start_date" class="regular-text" required style="width: 180px;" />
+                                        <input type="time" id="schedule_start_time" name="start_time" class="regular-text" value="00:00" style="width: 120px; margin-left: 10px;" />
+                                        <p class="description"><?php esc_html_e('Pierwsza generacja nastąpi o podanej godzinie (lub później gdy cron się uruchomi)', 'woo-data-exporter'); ?></p>
                                     </td>
                                 </tr>
                                 <tr>
