@@ -1,0 +1,40 @@
+---
+alwaysApply: true
+---
+
+# AGENT INSTRUCTIONS FOR: WooCommerce Advanced Exporter Plugin
+# alwaysApply: true
+
+## Main Objective
+Your goal is to help me build a scalable WooCommerce data export plugin for WordPress. The key feature is background processing to handle large datasets without timeouts.
+
+## Core Architecture
+- **Background Jobs:** All exports are processed in the background. The user triggers a job via AJAX, which creates a record in a custom table `wp_export_jobs`. A WP Cron task picks up and processes these jobs.
+- **Two Export Types:**
+    1.  **Marketing Export:** Aggregated data, one row per unique customer email.
+    2.  **Analytics Export:** Detailed data, one row per line item in an order.
+- **Database Access:** Use direct SQL queries via `$wpdb` for performance. Avoid using `wc_get_orders` or other WooCommerce API functions in loops.
+
+## Technology Stack
+- PHP 8.0+
+- WordPress & WooCommerce
+- Composer for dependency management and PSR-4 autoloading.
+- **`league/csv`:** This is the ONLY library you should use for writing CSV files. Do not use `fputcsv` directly.
+
+## Key Implementation Details
+- **Batch Processing:** The cron worker MUST process data in batches (e.g., 200-500 orders at a time) to prevent memory and execution time limits.
+- **SQL Queries:**
+    - Queries must be performant. Use appropriate `JOIN`s on indexed columns.
+    - The **`zgoda_marketingowa` (marketing_consent) field location is UNKNOWN**. Use a placeholder like `'TODO_FIND_MARKETING_CONSENT'` in the `SELECT` clause. You must remind me to replace this placeholder with the correct `meta_key` or table join once I've found it.
+- **File Handling:**
+    - Generated files should be stored in a non-public directory within `wp-content/uploads`.
+    - Access to downloaded files should be controlled, for example, via a script that verifies user permissions and serves the file, or via a temporary, hashed URL.
+- **Plugin Structure:**
+    - Use PSR-4 namespaces (e.g., `WooExporter\Admin`, `WooExporter\Cron`).
+    - The plugin activation hook must create the `wp_export_jobs` table.
+    - The deactivation hook should consider what to do with scheduled cron jobs (e.g., unschedule them).
+
+## Example Task Prompts
+- "Create the initial plugin file structure with Composer and PSR-4 setup."
+- "Write the SQL query for the 'Marketing Export', remembering to use a placeholder for the consent field and group by email."
+- "Implement the WP Cron worker class that processes jobs from the `wp_export_jobs` table in batches."

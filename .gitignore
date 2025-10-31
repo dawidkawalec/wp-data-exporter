@@ -1,0 +1,25 @@
+# Composer
+/vendor/
+composer.lock
+
+# Generated exports
+/uploads/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+debug.log
+
+# WordPress
+wp-config.php
+

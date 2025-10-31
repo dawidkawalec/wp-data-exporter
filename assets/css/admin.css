@@ -1,0 +1,224 @@
+/**
+ * Admin panel styles for WooCommerce Data Exporter
+ */
+
+.woo-exporter-admin {
+    max-width: 1200px;
+}
+
+.woo-exporter-admin .nav-tab-wrapper {
+    margin-bottom: 20px;
+}
+
+/* New Export Tab */
+.woo-exporter-tab-new-export {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.export-form-container {
+    background: #fff;
+    padding: 20px;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+
+.export-form-container h2 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.export-form .form-table th {
+    width: 200px;
+}
+
+.export-form #submit-export {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.export-form #submit-export .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+.export-form #submit-export:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Export Result */
+.export-result {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 4px;
+}
+
+.export-result.success {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.export-result.error {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.export-result.info {
+    background: #d1ecf1;
+    border: 1px solid #bee5eb;
+    color: #0c5460;
+}
+
+/* Info Boxes */
+.export-info-boxes {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.info-box {
+    background: #fff;
+    padding: 20px;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+
+.info-box h3 {
+    margin-top: 0;
+    color: #1d2327;
+    font-size: 16px;
+}
+
+.info-box p {
+    color: #646970;
+    margin-bottom: 10px;
+}
+
+.info-box ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.info-box ul li {
+    padding: 5px 0;
+    padding-left: 20px;
+    position: relative;
+    color: #50575e;
+}
+
+.info-box ul li:before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #2271b1;
+    font-weight: bold;
+}
+
+/* History Tab */
+.woo-exporter-tab-history {
+    margin-top: 20px;
+}
+
+.woo-exporter-tab-history h2 {
+    margin-bottom: 20px;
+}
+
+.woo-exporter-tab-history .no-jobs {
+    background: #fff;
+    padding: 40px;
+    text-align: center;
+    border: 1px solid #ccd0d4;
+    color: #646970;
+    font-size: 14px;
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.status-pending {
+    background: #f0f0f1;
+    color: #50575e;
+}
+
+.status-badge.status-processing {
+    background: #d1ecf1;
+    color: #0c5460;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.status-badge.status-completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.status-failed {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Action Buttons */
+.error-message {
+    color: #d63638;
+    cursor: help;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .woo-exporter-tab-new-export {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 782px) {
+    .woo-exporter-admin .wp-list-table {
+        font-size: 12px;
+    }
+    
+    .woo-exporter-admin .wp-list-table th,
+    .woo-exporter-admin .wp-list-table td {
+        padding: 8px 4px;
+    }
+}
+
+/* Loading Spinner */
+.woo-exporter-loading {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #2271b1;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    vertical-align: middle;
+    margin-left: 8px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
