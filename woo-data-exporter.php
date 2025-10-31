@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: WooCommerce Advanced Data Exporter
- * Plugin URI: https://github.com/dawidkawalec/wp-data-exporter
- * Description: Zaawansowany eksporter danych WooCommerce z przetwarzaniem w tle. Umożliwia generowanie raportów marketingowych i analitycznych bez ryzyka timeout'ów.
+ * Plugin URI: https://important.is
+ * Description: Zaawansowany eksporter danych WooCommerce z przetwarzaniem w tle. Umożliwia generowanie raportów marketingowych, analitycznych i niestandardowych bez ryzyka timeout'ów.
  * Version: 1.0.0
- * Author: Dawid Kawalec
- * Author URI: https://github.com/dawidkawalec
+ * Author: important.is, Dawid Kawalec
+ * Author URI: https://important.is
  * Text Domain: woo-data-exporter
  * Domain Path: /languages
  * Requires at least: 6.5

@@ -83,6 +83,15 @@ class AdminPage {
             self::PAGE_SLUG . '&tab=templates',
             [$this, 'render_page']
         );
+        
+        add_submenu_page(
+            self::PAGE_SLUG,
+            __('O wtyczce', 'woo-data-exporter'),
+            __('O wtyczce', 'woo-data-exporter'),
+            'manage_woocommerce',
+            self::PAGE_SLUG . '&tab=about',
+            [$this, 'render_page']
+        );
     }
 
     /**
@@ -749,39 +758,41 @@ class AdminPage {
         ?>
         <div class="woo-exporter-tab-about">
             <div style="max-width: 900px;">
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px; border-radius: 8px; margin-bottom: 30px; text-align: center;">
-                    <h2 style="color: white; margin: 0 0 10px 0; font-size: 32px;">WooCommerce Advanced Data Exporter</h2>
-                    <p style="font-size: 18px; margin: 0; opacity: 0.9;">Profesjonalne narzędzie do eksportu danych z przetwarzaniem w tle</p>
-                    <p style="margin: 20px 0 0 0; opacity: 0.8;">Wersja <?php echo esc_html(WOO_EXPORTER_VERSION); ?></p>
+                <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 40px; border-radius: 8px; margin-bottom: 30px; text-align: center;">
+                    <h2 style="color: white; margin: 0 0 10px 0; font-size: 32px; line-height: 1.3;">WooCommerce Advanced Data Exporter</h2>
+                    <p style="font-size: 18px; margin: 0; opacity: 0.9; line-height: 1.6;">Profesjonalne narzędzie do eksportu danych z przetwarzaniem w tle</p>
+                    <p style="margin: 20px 0 0 0; opacity: 0.7; font-size: 14px;">Wersja <?php echo esc_html(WOO_EXPORTER_VERSION); ?></p>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;" class="about-grid">
                     <div style="background: #fff; padding: 30px; border: 1px solid #ccd0d4; border-radius: 4px;">
-                        <h3 style="margin-top: 0; color: #2271b1;">👨‍💻 Deweloper</h3>
-                        <p><strong>Dawid Kawalec</strong></p>
-                        <p style="color: #646970; margin: 10px 0;">Full-stack developer specjalizujący się w rozwiązaniach WordPress i WooCommerce.</p>
+                        <h3 style="margin-top: 0; color: #2271b1; line-height: 1.4;">🏢 Agencja</h3>
+                        <p style="line-height: 1.6;"><strong>important.is</strong></p>
+                        <p style="color: #646970; margin: 10px 0; line-height: 1.6;">Agencja produktowa specjalizująca się w projektowaniu i programowaniu rozwiązań dla biznesu. Tworzymy cyfrowe produkty, które działają.</p>
                         <p>
-                            <a href="https://github.com/dawidkawalec" target="_blank" rel="noopener" class="button">
-                                GitHub Profile
+                            <a href="https://important.is" target="_blank" rel="noopener" class="button button-primary">
+                                <span class="dashicons dashicons-admin-site"></span>
+                                Odwiedź Stronę
                             </a>
                         </p>
                     </div>
 
                     <div style="background: #fff; padding: 30px; border: 1px solid #ccd0d4; border-radius: 4px;">
-                        <h3 style="margin-top: 0; color: #2271b1;">🏢 Firma</h3>
-                        <p><strong>important.is</strong></p>
-                        <p style="color: #646970; margin: 10px 0;">Agencja produktowa specjalizująca się w projektowaniu i programowaniu rozwiązań dla biznesu.</p>
+                        <h3 style="margin-top: 0; color: #2271b1; line-height: 1.4;">👨‍💻 Deweloper</h3>
+                        <p style="line-height: 1.6;"><strong>Dawid Kawalec</strong></p>
+                        <p style="color: #646970; margin: 10px 0; line-height: 1.6;">Full-stack developer specjalizujący się w rozwiązaniach WordPress i WooCommerce. Autor wtyczki.</p>
                         <p>
-                            <a href="https://important.is" target="_blank" rel="noopener" class="button button-primary">
-                                Odwiedź Stronę
+                            <a href="https://kawalec.pl" target="_blank" rel="noopener" class="button">
+                                <span class="dashicons dashicons-admin-users"></span>
+                                Strona Autora
                             </a>
                         </p>
                     </div>
                 </div>
 
                 <div style="background: #fff; padding: 30px; border: 1px solid #ccd0d4; border-radius: 4px; margin-bottom: 30px;">
-                    <h3 style="margin-top: 0;">🚀 Możliwości</h3>
-                    <ul style="columns: 2; column-gap: 30px; list-style-position: inside;">
+                    <h3 style="margin-top: 0; line-height: 1.4;">🚀 Możliwości</h3>
+                    <ul style="columns: 2; column-gap: 30px; list-style-position: inside; line-height: 1.8;">
                         <li>Background processing (WP Cron)</li>
                         <li>Batch processing (500 rek./iteracja)</li>
                         <li>3 typy eksportów (Marketing, Analytics, Custom)</li>
@@ -798,48 +809,38 @@ class AdminPage {
                 </div>
 
                 <div style="background: #fff; padding: 30px; border: 1px solid #ccd0d4; border-radius: 4px; margin-bottom: 30px;">
-                    <h3 style="margin-top: 0;">📊 Statystyki Projektu</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px;">
+                    <h3 style="margin-top: 0; line-height: 1.4;">📊 Statystyki Projektu</h3>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
                         <div style="text-align: center; padding: 20px; background: #f0f6fc; border-radius: 4px;">
-                            <div style="font-size: 36px; font-weight: bold; color: #2271b1;">6,400+</div>
-                            <div style="color: #646970; font-size: 14px;">Linii kodu</div>
+                            <div style="font-size: 36px; font-weight: bold; color: #2271b1; line-height: 1;">6,675</div>
+                            <div style="color: #646970; font-size: 14px; margin-top: 8px; line-height: 1.4;">Linii kodu</div>
                         </div>
                         <div style="text-align: center; padding: 20px; background: #f0f6fc; border-radius: 4px;">
-                            <div style="font-size: 36px; font-weight: bold; color: #2271b1;">18</div>
-                            <div style="color: #646970; font-size: 14px;">Plików źródłowych</div>
+                            <div style="font-size: 36px; font-weight: bold; color: #2271b1; line-height: 1;">18</div>
+                            <div style="color: #646970; font-size: 14px; margin-top: 8px; line-height: 1.4;">Plików źródłowych</div>
                         </div>
                         <div style="text-align: center; padding: 20px; background: #f0f6fc; border-radius: 4px;">
-                            <div style="font-size: 36px; font-weight: bold; color: #2271b1;">3</div>
-                            <div style="color: #646970; font-size: 14px;">Tabele bazy</div>
+                            <div style="font-size: 36px; font-weight: bold; color: #2271b1; line-height: 1;">3</div>
+                            <div style="color: #646970; font-size: 14px; margin-top: 8px; line-height: 1.4;">Tabele bazy</div>
                         </div>
                         <div style="text-align: center; padding: 20px; background: #f0f6fc; border-radius: 4px;">
-                            <div style="font-size: 36px; font-weight: bold; color: #2271b1;">30+</div>
-                            <div style="color: #646970; font-size: 14px;">Endpointów AJAX</div>
+                            <div style="font-size: 36px; font-weight: bold; color: #2271b1; line-height: 1;">35</div>
+                            <div style="color: #646970; font-size: 14px; margin-top: 8px; line-height: 1.4;">Commitów</div>
                         </div>
                     </div>
                 </div>
 
                 <div style="background: #fff; padding: 30px; border: 1px solid #ccd0d4; border-radius: 4px;">
-                    <h3 style="margin-top: 0;">📄 Dokumentacja i Wsparcie</h3>
-                    <p>Pełna dokumentacja techniczna dostępna w pliku <code>README.md</code> w katalogu wtyczki.</p>
-                    <p>
-                        <a href="https://github.com/dawidkawalec/wp-data-exporter" target="_blank" rel="noopener" class="button">
-                            <span class="dashicons dashicons-github" style="margin-top: -3px;"></span>
-                            Zobacz na GitHub
-                        </a>
-                        <a href="<?php echo esc_url(WOO_EXPORTER_PLUGIN_DIR . 'README.md'); ?>" class="button" target="_blank">
-                            <span class="dashicons dashicons-media-document"></span>
-                            README.md
-                        </a>
-                    </p>
+                    <h3 style="margin-top: 0; line-height: 1.4;">📄 Dokumentacja i Wsparcie</h3>
+                    <p style="line-height: 1.6;">Pełna dokumentacja techniczna dostępna w pliku <code>README.md</code> w katalogu wtyczki.</p>
                     
-                    <h4 style="margin-top: 30px;">Stack Technologiczny:</h4>
-                    <p style="color: #646970;">
+                    <h4 style="margin-top: 30px; line-height: 1.4;">Stack Technologiczny:</h4>
+                    <p style="color: #646970; line-height: 1.6;">
                         PHP 8.0+ • WordPress 6.5+ • WooCommerce 8.0+ • Composer • PSR-4 • League CSV • MySQL • JavaScript (ES6+) • jQuery • CSS Grid • Flexbox
                     </p>
                     
-                    <h4 style="margin-top: 20px;">Licencja:</h4>
-                    <p style="color: #646970;">GPL-3.0-or-later</p>
+                    <h4 style="margin-top: 20px; line-height: 1.4;">Licencja:</h4>
+                    <p style="color: #646970; line-height: 1.6;">GPL-3.0-or-later</p>
                 </div>
             </div>
         </div>

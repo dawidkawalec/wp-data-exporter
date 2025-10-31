@@ -2,8 +2,8 @@
 
 Profesjonalne narzędzie do eksportu danych WooCommerce z przetwarzaniem w tle, batch processing i niestandardowymi szablonami. Zaprojektowane do obsługi dużych sklepów bez ryzyka timeout'ów.
 
-**Opracowane przez:** [Dawid Kawalec](https://github.com/dawidkawalec)  
-**Firma:** [important.is](https://important.is) - Agencja produktowa specjalizująca się w projektowaniu i programowaniu rozwiązań dla biznesu
+**Agencja:** [important.is](https://important.is) - Projektowanie i programowanie dla biznesu  
+**Autor:** [Dawid Kawalec](https://kawalec.pl) - Full-stack WordPress & WooCommerce Developer
 
 ## 🎯 Funkcje
 
@@ -354,10 +354,9 @@ composer install --no-dev --optimize-autoloader
 
 ## 📞 Support & Kontakt
 
-- **GitHub Issues**: https://github.com/dawidkawalec/wp-data-exporter/issues
-- **Dokumentacja**: Sprawdź zakładkę "O wtyczce" w panelu admina
-- **Deweloper**: [Dawid Kawalec](https://github.com/dawidkawalec)
-- **Firma**: [important.is](https://important.is) - Agencja produktowa
+- **Dokumentacja**: Sprawdź zakładkę "O wtyczce" w panelu admina WordPress
+- **Agencja**: [important.is](https://important.is) - Agencja produktowa
+- **Deweloper**: [Dawid Kawalec](https://kawalec.pl)
 
 ## 🏢 O important.is
 
@@ -377,6 +376,8 @@ composer install --no-dev --optimize-autoloader
 ## 👨‍💻 O Autorze
 
 **Dawid Kawalec** - Full-stack developer specjalizujący się w rozwiązaniach WordPress i WooCommerce. Twórca wtyczki WooCommerce Advanced Data Exporter.
+
+**Website:** https://kawalec.pl
 
 ## 📄 Licencja
 
