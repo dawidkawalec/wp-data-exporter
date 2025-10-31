@@ -43,7 +43,6 @@ class Schedule {
         $insert_data = [
             'name' => $data['name'],
             'job_type' => $data['job_type'],
-            'template_id' => $data['template_id'] ?? null,
             'frequency_type' => $data['frequency_type'],
             'frequency_value' => $data['frequency_value'],
             'start_date' => $data['start_date'],
@@ -53,16 +52,15 @@ class Schedule {
             'is_active' => $data['is_active'] ?? 1,
             'created_by' => $data['created_by'] ?? get_current_user_id(),
         ];
-
-        $format = ['%s', '%s']; // name, job_type
         
-        if ($insert_data['template_id'] !== null) {
-            $format[] = '%d'; // template_id
-        } else {
-            $format[] = '%s'; // template_id (NULL as string)
+        $format = ['%s', '%s', '%s', '%d', '%s', '%s', '%s', '%s', '%d', '%d'];
+        
+        // Add template_id only if present (for custom exports)
+        if (isset($data['template_id']) && $data['template_id']) {
+            $insert_data['template_id'] = $data['template_id'];
+            // Insert after job_type
+            $format = ['%s', '%s', '%d', '%s', '%d', '%s', '%s', '%s', '%s', '%d', '%d'];
         }
-        
-        $format = array_merge($format, ['%s', '%d', '%s', '%s', '%s', '%s', '%d', '%d']); // rest
         
         $result = $wpdb->insert(
             $table_name,
