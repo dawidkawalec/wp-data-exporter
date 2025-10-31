@@ -284,7 +284,10 @@
             }
             
             const templateId = $('#template_id').val();
-            const action = templateId ? 'update_template' : 'create_template';
+            const isEditing = templateId && templateId !== '' && templateId !== '0';
+            const action = isEditing ? 'update_template' : 'create_template';
+            
+            console.log('Template ID from form:', templateId, '| Is editing:', isEditing, '| Action:', action);
             
             const formData = {
                 action: action,
@@ -297,7 +300,7 @@
             };
             
             // Only add template_id if editing
-            if (templateId) {
+            if (isEditing) {
                 formData.template_id = templateId;
             }
             
