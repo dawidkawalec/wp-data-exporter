@@ -323,9 +323,9 @@ class AjaxHandler {
             ], 404);
         }
 
-        // Read first 100 rows of CSV
+        // Read first 500 rows of CSV (or all if less)
         try {
-            $csv_data = $this->read_csv_preview($job->file_path, 100);
+            $csv_data = $this->read_csv_preview($job->file_path, 500);
             
             wp_send_json_success([
                 'headers' => $csv_data['headers'] ?? [],
@@ -343,10 +343,10 @@ class AjaxHandler {
      * Read CSV file preview
      *
      * @param string $file_path Path to CSV file
-     * @param int $limit Number of rows to read
+     * @param int $limit Number of rows to read (default 500, 0 = all)
      * @return array CSV data
      */
-    private function read_csv_preview(string $file_path, int $limit = 100): array {
+    private function read_csv_preview(string $file_path, int $limit = 500): array {
         $file = fopen($file_path, 'r');
         if (!$file) {
             throw new \Exception('Cannot open file');
@@ -362,15 +362,26 @@ class AjaxHandler {
         // Read rows
         $rows = [];
         $count = 0;
-        while (($row = fgetcsv($file)) !== false && $count < $limit) {
-            $rows[] = $row;
-            $count++;
-        }
+        
+        if ($limit === 0) {
+            // Read all rows
+            while (($row = fgetcsv($file)) !== false) {
+                $rows[] = $row;
+                $count++;
+            }
+            $total_rows = $count;
+        } else {
+            // Read limited rows
+            while (($row = fgetcsv($file)) !== false && $count < $limit) {
+                $rows[] = $row;
+                $count++;
+            }
 
-        // Count total rows
-        $total_rows = $count;
-        while (fgetcsv($file) !== false) {
-            $total_rows++;
+            // Count total rows
+            $total_rows = $count;
+            while (fgetcsv($file) !== false) {
+                $total_rows++;
+            }
         }
 
         fclose($file);
