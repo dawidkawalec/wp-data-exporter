@@ -300,8 +300,16 @@ class DataQuery {
                 $alias = 'pm_total';
                 $select_parts[] = "{$alias}.meta_value as order_total";
                 $joins[] = "LEFT JOIN {$wpdb->postmeta} {$alias} ON p.ID = {$alias}.post_id AND {$alias}.meta_key = '_order_total'";
+            } elseif (strpos($field, '__') !== false) {
+                // Virtual field (parent__subkey) - select parent field, will parse later
+                $parts = explode('__', $field, 2);
+                $parent_key = $parts[0];
+                $alias = 'pm_' . $join_counter;
+                $select_parts[] = "{$alias}.meta_value as `{$field}`";
+                $joins[] = "LEFT JOIN {$wpdb->postmeta} {$alias} ON p.ID = {$alias}.post_id AND {$alias}.meta_key = '{$parent_key}'";
+                $join_counter++;
             } else {
-                // Meta fields
+                // Regular meta fields
                 $alias = 'pm_' . $join_counter;
                 $select_parts[] = "{$alias}.meta_value as `{$field}`";
                 $joins[] = "LEFT JOIN {$wpdb->postmeta} {$alias} ON p.ID = {$alias}.post_id AND {$alias}.meta_key = '{$field}'";
@@ -323,10 +331,15 @@ class DataQuery {
 
         $results = $wpdb->get_results($wpdb->prepare($sql, $limit, $offset), ARRAY_A);
         
-        // Parse consent fields if present
+        // Parse virtual fields and consent fields
         foreach ($results as &$row) {
             foreach ($template->selected_fields as $field) {
-                if ($field === '_additional_terms' && !empty($row[$field])) {
+                // Virtual field - extract from serialized parent
+                if (strpos($field, '__') !== false && isset($row[$field])) {
+                    $row[$field] = MetaScanner::extract_virtual_field($field, $row);
+                }
+                // Legacy: Parse _additional_terms if selected as whole field
+                elseif ($field === '_additional_terms' && !empty($row[$field])) {
                     $row[$field] = self::parse_consent_field($row[$field]);
                 }
             }

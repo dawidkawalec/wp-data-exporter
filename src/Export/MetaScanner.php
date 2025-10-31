@@ -247,10 +247,10 @@ class MetaScanner {
      * Extract value from virtual field (parent__subkey)
      *
      * @param string $virtual_field Virtual field name (e.g., _additional_terms__zgoda_marketingowa)
-     * @param array $raw_meta Raw meta data
+     * @param array $row_data Row data from query (can be meta array or DB row)
      * @return string Extracted value
      */
-    private static function extract_virtual_field(string $virtual_field, array $raw_meta): string {
+    public static function extract_virtual_field(string $virtual_field, array $row_data): string {
         $parts = explode('__', $virtual_field, 2);
         if (count($parts) !== 2) {
             return '';
@@ -258,11 +258,14 @@ class MetaScanner {
 
         list($parent_key, $sub_key) = $parts;
 
-        if (!isset($raw_meta[$parent_key])) {
+        // Get parent value (could be direct key or need to fetch)
+        $parent_value = $row_data[$parent_key] ?? $row_data[$virtual_field] ?? '';
+        
+        if (!$parent_value) {
             return '';
         }
 
-        $unserialized = @unserialize($raw_meta[$parent_key]);
+        $unserialized = @unserialize($parent_value);
         if (!is_array($unserialized)) {
             return '';
         }
