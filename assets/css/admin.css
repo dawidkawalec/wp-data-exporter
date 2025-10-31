@@ -520,15 +520,14 @@
         opacity: 0;
     }
     
-    /* Scroll arrow indicator (ABSOLUTE do container, nie viewport) */
+    /* Scroll arrow indicator (ABSOLUTE, centered na tabeli) */
     .woo-exporter-tab-history::before,
     .woo-exporter-tab-schedules::before,
     .woo-exporter-tab-templates::before {
         content: '';
         position: absolute;
-        top: 50%;
+        top: 120px;
         right: 15px;
-        transform: translateY(-50%);
         width: 40px;
         height: 40px;
         background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%232271b1"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/><path d="M0 0h24v24H0V0z" fill="none"/></svg>');
