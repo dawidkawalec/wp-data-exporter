@@ -474,11 +474,14 @@
                 notification_email: $('#schedule_email').val()
             };
 
+            console.log('Sending schedule data:', formData);
+
             $.ajax({
                 url: wooExporterAdmin.ajax_url,
                 type: 'POST',
                 data: formData,
                 success: function(response) {
+                    console.log('Schedule response:', response);
                     if (response.success) {
                         alert('✅ ' + response.data.message);
                         WooExporter.closeScheduleModal();
@@ -487,8 +490,10 @@
                         alert('❌ ' + (response.data.message || 'Błąd zapisu.'));
                     }
                 },
-                error: function() {
-                    alert('Błąd połączenia.');
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', xhr, status, error);
+                    console.error('Response:', xhr.responseText);
+                    alert('Błąd połączenia: ' + error + '\n\nOtwórz Console (F12) aby zobaczyć szczegóły.');
                 }
             });
         },

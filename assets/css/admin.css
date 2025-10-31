@@ -47,24 +47,30 @@
     height: 18px;
 }
 
-/* Fix all button icons alignment */
-.button .dashicons {
-    vertical-align: middle;
-    margin-top: -2px;
-    line-height: 1;
+/* Fix all button icons alignment - GLOBAL */
+.button .dashicons,
+.button-primary .dashicons,
+.button-secondary .dashicons,
+.button-large .dashicons,
+.button-small .dashicons {
+    display: inline-block !important;
+    vertical-align: middle !important;
+    margin-top: -3px !important;
+    line-height: 1 !important;
 }
 
 .button-primary .dashicons,
 .button-large .dashicons {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
+    font-size: 18px !important;
+    width: 18px !important;
+    height: 18px !important;
 }
 
 .button-small .dashicons {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
+    font-size: 16px !important;
+    width: 16px !important;
+    height: 16px !important;
+    margin-top: -2px !important;
 }
 
 .export-form #submit-export:disabled {
