@@ -321,6 +321,11 @@
     $(document).ready(function() {
         if ($('#template-builder-form').length) {
             TemplateBuilder.init();
+            
+            // Auto-load preview on page load
+            if ($('#preview-order-id').val()) {
+                TemplateBuilder.loadPreview();
+            }
         }
     });
 
