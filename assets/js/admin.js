@@ -697,23 +697,45 @@
     $(document).ready(function() {
         WooExporter.init();
         
-        // Handle scroll indicator visibility
-        $('.woo-exporter-tab-history, .woo-exporter-tab-schedules, .woo-exporter-tab-templates').on('scroll', function() {
+        // Create scroll indicators for tables
+        $('.woo-exporter-tab-history, .woo-exporter-tab-schedules, .woo-exporter-tab-templates').each(function() {
             const $container = $(this);
-            const scrollLeft = $container.scrollLeft();
-            const scrollWidth = $container[0].scrollWidth;
-            const clientWidth = $container[0].clientWidth;
+            const $table = $container.find('table.wp-list-table');
             
-            // Check if scrolled to end (within 10px threshold)
-            if (scrollLeft + clientWidth >= scrollWidth - 10) {
-                $container.addClass('scrolled-to-end');
-            } else {
-                $container.removeClass('scrolled-to-end');
-            }
+            if ($table.length === 0) return;
+            
+            // Create gradient overlay
+            const $gradient = $('<div class="scroll-gradient-indicator"></div>');
+            $container.append($gradient);
+            
+            // Create arrow indicator
+            const $arrow = $('<div class="scroll-arrow-indicator"></div>');
+            $container.append($arrow);
+            
+            // Update on scroll
+            $container.on('scroll', function() {
+                const scrollLeft = $container.scrollLeft();
+                const scrollWidth = $container[0].scrollWidth;
+                const clientWidth = $container[0].clientWidth;
+                
+                // Position gradient and arrow at right edge of viewport (not scrolling content)
+                const rightOffset = scrollLeft + clientWidth;
+                $gradient.css('left', (rightOffset - 200) + 'px');
+                $arrow.css('left', (rightOffset - 55) + 'px');
+                
+                // Hide when scrolled to end
+                if (scrollLeft + clientWidth >= scrollWidth - 10) {
+                    $gradient.fadeOut(300);
+                    $arrow.fadeOut(300);
+                } else {
+                    $gradient.fadeIn(300);
+                    $arrow.fadeIn(300);
+                }
+            });
+            
+            // Initial position
+            $container.trigger('scroll');
         });
-        
-        // Trigger initial check
-        $('.woo-exporter-tab-history, .woo-exporter-tab-schedules, .woo-exporter-tab-templates').trigger('scroll');
     });
 
 })(jQuery);
