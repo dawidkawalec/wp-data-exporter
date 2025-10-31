@@ -90,7 +90,14 @@ class ExportWorker {
 
             // Initialize CSV generator
             error_log('WOO_EXPORTER: Job #' . $job->id . ' - Initializing CSV generator');
-            $csv_generator = new CsvGenerator($job->job_type);
+            
+            // Get template for custom exports
+            $template = null;
+            if ($job->job_type === Job::TYPE_CUSTOM && !empty($job->filters['template_id'])) {
+                $template = \WooExporter\Database\Template::get($job->filters['template_id']);
+            }
+            
+            $csv_generator = new CsvGenerator($job->job_type, $template);
             
             $offset = 0;
             $processed = 0;
@@ -171,9 +178,14 @@ class ExportWorker {
      * @return int Total count
      */
     private function get_total_count(string $job_type, array $filters): int {
-        return $job_type === Job::TYPE_MARKETING 
-            ? DataQuery::get_marketing_count($filters)
-            : DataQuery::get_analytics_count($filters);
+        if ($job_type === Job::TYPE_MARKETING) {
+            return DataQuery::get_marketing_count($filters);
+        } elseif ($job_type === Job::TYPE_ANALYTICS) {
+            return DataQuery::get_analytics_count($filters);
+        } elseif ($job_type === Job::TYPE_CUSTOM && !empty($filters['template_id'])) {
+            return DataQuery::get_custom_count($filters['template_id'], $filters);
+        }
+        return 0;
     }
 
     /**
@@ -186,9 +198,14 @@ class ExportWorker {
      * @return array Batch data
      */
     private function get_batch_data(string $job_type, array $filters, int $offset, int $limit): array {
-        return $job_type === Job::TYPE_MARKETING
-            ? DataQuery::get_marketing_data($filters, $offset, $limit)
-            : DataQuery::get_analytics_data($filters, $offset, $limit);
+        if ($job_type === Job::TYPE_MARKETING) {
+            return DataQuery::get_marketing_data($filters, $offset, $limit);
+        } elseif ($job_type === Job::TYPE_ANALYTICS) {
+            return DataQuery::get_analytics_data($filters, $offset, $limit);
+        } elseif ($job_type === Job::TYPE_CUSTOM && !empty($filters['template_id'])) {
+            return DataQuery::get_custom_data($filters['template_id'], $filters, $offset, $limit);
+        }
+        return [];
     }
 
     /**

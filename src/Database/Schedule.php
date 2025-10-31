@@ -43,6 +43,7 @@ class Schedule {
         $insert_data = [
             'name' => $data['name'],
             'job_type' => $data['job_type'],
+            'template_id' => $data['template_id'] ?? null,
             'frequency_type' => $data['frequency_type'],
             'frequency_value' => $data['frequency_value'],
             'start_date' => $data['start_date'],
@@ -56,7 +57,7 @@ class Schedule {
         $result = $wpdb->insert(
             $table_name,
             $insert_data,
-            ['%s', '%s', '%s', '%d', '%s', '%s', '%s', '%s', '%d', '%d']
+            ['%s', '%s', '%d', '%s', '%d', '%s', '%s', '%s', '%s', '%d', '%d']
         );
 
         return $result !== false ? $wpdb->insert_id : false;
@@ -149,7 +150,7 @@ class Schedule {
         $update_data = [];
         $format = [];
 
-        $allowed_fields = ['name', 'job_type', 'frequency_type', 'frequency_value', 
+        $allowed_fields = ['name', 'job_type', 'template_id', 'frequency_type', 'frequency_value', 
                           'start_date', 'notification_email', 'filters', 'is_active'];
 
         foreach ($allowed_fields as $field) {

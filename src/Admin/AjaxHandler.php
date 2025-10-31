@@ -65,14 +65,20 @@ class AjaxHandler {
         // Get and validate export type
         $export_type = isset($_POST['export_type']) ? sanitize_text_field($_POST['export_type']) : '';
         
-        if (!in_array($export_type, ['marketing', 'analytics'], true)) {
+        if (!in_array($export_type, ['marketing', 'analytics', 'custom'], true)) {
             wp_send_json_error([
                 'message' => __('Nieprawidłowy typ eksportu.', 'woo-data-exporter')
             ], 400);
         }
 
         // Convert type to internal format
-        $job_type = $export_type === 'marketing' ? Job::TYPE_MARKETING : Job::TYPE_ANALYTICS;
+        if ($export_type === 'marketing') {
+            $job_type = Job::TYPE_MARKETING;
+        } elseif ($export_type === 'analytics') {
+            $job_type = Job::TYPE_ANALYTICS;
+        } else {
+            $job_type = Job::TYPE_CUSTOM;
+        }
 
         // Get and validate filters
         $filters = [];
@@ -90,6 +96,19 @@ class AjaxHandler {
         }
         if (isset($_POST['end_date']) && !empty($_POST['end_date'])) {
             $filters['end_date'] = sanitize_text_field($_POST['end_date']);
+        }
+        
+        // Template ID for custom exports
+        if ($job_type === Job::TYPE_CUSTOM) {
+            $template_id = isset($_POST['template_id']) ? absint($_POST['template_id']) : 0;
+            
+            if (!$template_id) {
+                wp_send_json_error([
+                    'message' => __('Wybierz szablon dla eksportu niestandardowego.', 'woo-data-exporter')
+                ], 400);
+            }
+            
+            $filters['template_id'] = $template_id;
         }
 
         // Validate dates
@@ -770,6 +789,15 @@ class AjaxHandler {
             return new \WP_Error('invalid', __('Nieprawidłowy email.', 'woo-data-exporter'));
         }
         $data['notification_email'] = implode(',', $valid_emails);
+        
+        // Template ID for custom exports
+        if ($data['job_type'] === 'custom_export') {
+            $template_id = isset($post_data['template_id']) ? absint($post_data['template_id']) : 0;
+            if (!$template_id) {
+                return new \WP_Error('invalid', __('Szablon jest wymagany dla custom export.', 'woo-data-exporter'));
+            }
+            $data['template_id'] = $template_id;
+        }
 
         return $data;
     }

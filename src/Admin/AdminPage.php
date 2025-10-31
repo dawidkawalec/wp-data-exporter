@@ -150,9 +150,31 @@ class AdminPage {
                                     <option value=""><?php esc_html_e('-- Wybierz typ --', 'woo-data-exporter'); ?></option>
                                     <option value="marketing"><?php esc_html_e('Marketing (unikalni klienci)', 'woo-data-exporter'); ?></option>
                                     <option value="analytics"><?php esc_html_e('Analityka (szczegółowe linie zamówień)', 'woo-data-exporter'); ?></option>
+                                    <option value="custom"><?php esc_html_e('🎨 Niestandardowy (użyj szablonu)', 'woo-data-exporter'); ?></option>
                                 </select>
                                 <p class="description">
                                     <?php esc_html_e('Marketing: jeden wiersz per email. Analityka: jeden wiersz per produkt w zamówieniu.', 'woo-data-exporter'); ?>
+                                </p>
+                            </td>
+                        </tr>
+                        <tr id="template_selector_row" style="display: none;">
+                            <th scope="row">
+                                <label for="template_id"><?php esc_html_e('Wybierz szablon', 'woo-data-exporter'); ?></label>
+                            </th>
+                            <td>
+                                <select name="template_id" id="template_id" class="regular-text">
+                                    <option value=""><?php esc_html_e('-- Wybierz szablon --', 'woo-data-exporter'); ?></option>
+                                    <?php 
+                                    $templates = \WooExporter\Database\Template::get_all();
+                                    foreach ($templates as $tpl): 
+                                    ?>
+                                        <option value="<?php echo esc_attr($tpl->id); ?>">
+                                            <?php echo esc_html($tpl->name); ?> (<?php echo count($tpl->selected_fields); ?> pól)
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <p class="description">
+                                    <a href="admin.php?page=woo-data-exporter&tab=templates"><?php esc_html_e('Zarządzaj szablonami', 'woo-data-exporter'); ?></a>
                                 </p>
                             </td>
                         </tr>
@@ -541,6 +563,23 @@ class AdminPage {
                                         <select id="schedule_job_type" name="job_type" class="regular-text" required>
                                             <option value="marketing_export"><?php esc_html_e('Marketing', 'woo-data-exporter'); ?></option>
                                             <option value="analytics_export"><?php esc_html_e('Analityka', 'woo-data-exporter'); ?></option>
+                                            <option value="custom_export"><?php esc_html_e('🎨 Niestandardowy (szablon)', 'woo-data-exporter'); ?></option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr id="schedule_template_row" style="display: none;">
+                                    <th><label for="schedule_template_id"><?php esc_html_e('Szablon', 'woo-data-exporter'); ?> *</label></th>
+                                    <td>
+                                        <select id="schedule_template_id" name="template_id" class="regular-text">
+                                            <option value=""><?php esc_html_e('-- Wybierz szablon --', 'woo-data-exporter'); ?></option>
+                                            <?php 
+                                            $templates = \WooExporter\Database\Template::get_all();
+                                            foreach ($templates as $tpl): 
+                                            ?>
+                                                <option value="<?php echo esc_attr($tpl->id); ?>">
+                                                    <?php echo esc_html($tpl->name); ?>
+                                                </option>
+                                            <?php endforeach; ?>
                                         </select>
                                     </td>
                                 </tr>

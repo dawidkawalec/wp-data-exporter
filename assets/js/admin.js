@@ -27,6 +27,13 @@
                     WooExporter.closePreviewModal();
                 }
             });
+            
+            // Export type toggle (show template selector for custom)
+            $(document).on('change', '#export_type', function() {
+                const isCustom = $(this).val() === 'custom';
+                $('#template_selector_row').toggle(isCustom);
+                $('#template_id').prop('required', isCustom);
+            });
 
             // Schedule events
             $(document).on('click', '#add-new-schedule', this.openScheduleModal.bind(this));
@@ -36,6 +43,11 @@
             $(document).on('click', '.schedule-modal-close', this.closeScheduleModal.bind(this));
             $(document).on('submit', '#schedule-form', this.handleScheduleFormSubmit.bind(this));
             $(document).on('change', '#schedule_frequency_type', this.updateFrequencyField.bind(this));
+            $(document).on('change', '#schedule_job_type', function() {
+                const isCustom = $(this).val() === 'custom_export';
+                $('#schedule_template_row').toggle(isCustom);
+                $('#schedule_template_id').prop('required', isCustom);
+            });
             
             // Template events
             $(document).on('click', '#add-new-template', this.addNewTemplate.bind(this));
@@ -55,14 +67,25 @@
             const $resultDiv = $('#export-result');
 
             // Get form data
+            const exportType = $form.find('#export_type').val();
             const formData = {
                 action: 'create_export_job',
                 nonce: wooExporterAdmin.nonce,
-                export_type: $form.find('#export_type').val(),
+                export_type: exportType,
                 start_date: $form.find('#start_date').val(),
                 end_date: $form.find('#end_date').val(),
                 notification_email: $form.find('#notification_email').val()
             };
+            
+            // Add template_id if custom export
+            if (exportType === 'custom') {
+                formData.template_id = $form.find('#template_id').val();
+                
+                if (!formData.template_id) {
+                    this.showMessage($resultDiv, wooExporterAdmin.strings.error, 'Wybierz szablon dla eksportu niestandardowego.', 'error');
+                    return;
+                }
+            }
 
             // Validate
             if (!formData.export_type) {
@@ -467,17 +490,22 @@
             const scheduleId = $('#schedule_id').val();
             const action = scheduleId ? 'update_schedule' : 'create_schedule';
             
+            const jobType = $('#schedule_job_type').val();
             const formData = {
                 action: action,
                 nonce: wooExporterAdmin.nonce,
                 schedule_id: scheduleId,
                 name: $('#schedule_name').val(),
-                job_type: $('#schedule_job_type').val(),
+                job_type: jobType,
                 frequency_type: $('#schedule_frequency_type').val(),
                 frequency_value: $('#schedule_frequency_value').val(),
                 start_date: $('#schedule_start_date').val(),
                 notification_email: $('#schedule_email').val()
             };
+            
+            if (jobType === 'custom_export') {
+                formData.template_id = $('#schedule_template_id').val();
+            }
 
             console.log('Sending schedule data:', formData);
 

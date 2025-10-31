@@ -71,6 +71,7 @@ class Schema {
             id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
             name VARCHAR(255) NOT NULL COMMENT 'Nazwa harmonogramu',
             job_type VARCHAR(50) NOT NULL COMMENT 'Typ eksportu',
+            template_id BIGINT(20) UNSIGNED NULL COMMENT 'ID szablonu (dla custom_export)',
             frequency_type VARCHAR(20) NOT NULL COMMENT 'daily, weekly, monthly',
             frequency_value INT UNSIGNED NOT NULL COMMENT 'Co ile dni / który dzień tygodnia / miesiąca',
             start_date DATE NOT NULL COMMENT 'Data rozpoczęcia',
@@ -85,7 +86,8 @@ class Schema {
             PRIMARY KEY (id),
             INDEX next_run_idx (next_run_date, is_active),
             INDEX created_by_idx (created_by),
-            INDEX is_active_idx (is_active)
+            INDEX is_active_idx (is_active),
+            INDEX template_id_idx (template_id)
         ) {$charset_collate};";
         
         dbDelta($sql_schedules);

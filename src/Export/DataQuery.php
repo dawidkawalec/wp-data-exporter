@@ -252,5 +252,105 @@ class DataQuery {
 
         return (int) $wpdb->get_var($sql);
     }
+
+    /**
+     * Get custom export data based on template
+     *
+     * @param int $template_id Template ID
+     * @param array $filters Filters (start_date, end_date)
+     * @param int $offset Pagination offset
+     * @param int $limit Batch size
+     * @return array Results array
+     */
+    public static function get_custom_data(int $template_id, array $filters = [], int $offset = 0, int $limit = 500): array {
+        $template = \WooExporter\Database\Template::get($template_id);
+        
+        if (!$template || empty($template->selected_fields)) {
+            return [];
+        }
+
+        global $wpdb;
+
+        $where_clauses = ["p.post_type = 'shop_order'"];
+        $where_clauses[] = "p.post_status IN ('wc-completed', 'wc-processing', 'wc-on-hold', 'wc-cancelled')";
+
+        if (!empty($filters['start_date'])) {
+            $where_clauses[] = $wpdb->prepare("p.post_date >= %s", $filters['start_date'] . ' 00:00:00');
+        }
+        if (!empty($filters['end_date'])) {
+            $where_clauses[] = $wpdb->prepare("p.post_date <= %s", $filters['end_date'] . ' 23:59:59');
+        }
+
+        $where_sql = implode(' AND ', $where_clauses);
+
+        // Build dynamic SELECT and JOINs
+        $select_parts = ['p.ID as order_id'];
+        $joins = [];
+        $join_counter = 0;
+
+        foreach ($template->selected_fields as $field) {
+            $alias = 'pm_' . $join_counter;
+            $select_parts[] = "{$alias}.meta_value as `{$field}`";
+            $joins[] = "LEFT JOIN {$wpdb->postmeta} {$alias} ON p.ID = {$alias}.post_id AND {$alias}.meta_key = '{$field}'";
+            $join_counter++;
+        }
+
+        $select_sql = implode(', ', $select_parts);
+        $joins_sql = implode(' ', $joins);
+
+        $sql = "
+            SELECT {$select_sql}
+            FROM {$wpdb->posts} p
+            {$joins_sql}
+            WHERE {$where_sql}
+            ORDER BY p.post_date DESC
+            LIMIT %d OFFSET %d
+        ";
+
+        $results = $wpdb->get_results($wpdb->prepare($sql, $limit, $offset), ARRAY_A);
+        
+        // Parse consent fields if present
+        foreach ($results as &$row) {
+            foreach ($template->selected_fields as $field) {
+                if ($field === '_additional_terms' && !empty($row[$field])) {
+                    $row[$field] = self::parse_consent_field($row[$field]);
+                }
+            }
+        }
+
+        return $results;
+    }
+
+    /**
+     * Get total count for custom export
+     *
+     * @param int $template_id Template ID
+     * @param array $filters Filters
+     * @return int Total count
+     */
+    public static function get_custom_count(int $template_id, array $filters = []): int {
+        global $wpdb;
+
+        $where_clauses = ["p.post_type = 'shop_order'"];
+        $where_clauses[] = "p.post_status IN ('wc-completed', 'wc-processing', 'wc-on-hold', 'wc-cancelled')";
+
+        if (!empty($filters['start_date'])) {
+            $where_clauses[] = $wpdb->prepare("p.post_date >= %s", $filters['start_date'] . ' 00:00:00');
+        }
+        if (!empty($filters['end_date'])) {
+            $where_clauses[] = $wpdb->prepare("p.post_date <= %s", $filters['end_date'] . ' 23:59:59');
+        }
+
+        $where_sql = implode(' AND ', $where_clauses);
+
+        $sql = "
+            SELECT COUNT(*) as total
+            FROM {$wpdb->posts} p
+            WHERE {$where_sql}
+        ";
+
+        return (int) $wpdb->get_var($sql);
+    }
 }
+
 

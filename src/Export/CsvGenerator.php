@@ -70,13 +70,20 @@ class CsvGenerator {
     private string $export_type;
 
     /**
+     * @var object|null Template object for custom exports
+     */
+    private ?object $template;
+
+    /**
      * Constructor
      *
-     * @param string $export_type Export type (marketing_export or analytics_export)
+     * @param string $export_type Export type (marketing_export, analytics_export, custom_export)
+     * @param object|null $template Template object (required for custom_export)
      * @throws CsvException
      */
-    public function __construct(string $export_type) {
+    public function __construct(string $export_type, ?object $template = null) {
         $this->export_type = $export_type;
+        $this->template = $template;
         $this->file_path = $this->generate_file_path();
         
         // Ensure directory exists
@@ -118,6 +125,19 @@ class CsvGenerator {
      * @return array Headers
      */
     private function get_headers(): array {
+        if ($this->export_type === 'custom_export' && $this->template) {
+            // Use template field order (or selected_fields if no order)
+            $fields = $this->template->field_order ?: $this->template->selected_fields;
+            
+            // Apply aliases
+            $headers = [];
+            foreach ($fields as $field) {
+                $headers[] = $this->template->field_aliases[$field] ?? $field;
+            }
+            
+            return $headers;
+        }
+        
         return $this->export_type === 'marketing_export' 
             ? self::MARKETING_HEADERS 
             : self::ANALYTICS_HEADERS;
@@ -137,14 +157,28 @@ class CsvGenerator {
         try {
             // Prepare rows according to headers
             $prepared_rows = [];
-            $headers = $this->get_headers();
-
-            foreach ($rows as $row) {
-                $prepared_row = [];
-                foreach ($headers as $header) {
-                    $prepared_row[] = $row[$header] ?? '';
+            
+            // For custom exports, use template field order
+            if ($this->export_type === 'custom_export' && $this->template) {
+                $field_order = $this->template->field_order ?: $this->template->selected_fields;
+                
+                foreach ($rows as $row) {
+                    $prepared_row = [];
+                    foreach ($field_order as $field) {
+                        $prepared_row[] = $row[$field] ?? '';
+                    }
+                    $prepared_rows[] = $prepared_row;
                 }
-                $prepared_rows[] = $prepared_row;
+            } else {
+                // Standard exports
+                $headers = $this->get_headers();
+                foreach ($rows as $row) {
+                    $prepared_row = [];
+                    foreach ($headers as $header) {
+                        $prepared_row[] = $row[$header] ?? '';
+                    }
+                    $prepared_rows[] = $prepared_row;
+                }
             }
 
             $this->writer->insertAll($prepared_rows);

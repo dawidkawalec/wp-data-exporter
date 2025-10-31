@@ -31,10 +31,15 @@ class Job {
     public const TYPE_ANALYTICS = 'analytics_export';
 
     /**
+     * Job types (extended)
+     */
+    public const TYPE_CUSTOM = 'custom_export';
+
+    /**
      * Create a new job
      *
-     * @param string $job_type Job type (marketing_export or analytics_export)
-     * @param array $filters Optional filters (start_date, end_date, etc.)
+     * @param string $job_type Job type (marketing_export, analytics_export, custom_export)
+     * @param array $filters Optional filters (start_date, end_date, template_id, etc.)
      * @param int $requester_id User ID who requested the export
      * @param string|null $notification_email Email(s) for notifications (comma-separated)
      * @param int|null $schedule_id Schedule ID if auto-generated

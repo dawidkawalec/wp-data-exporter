@@ -63,6 +63,11 @@ class ScheduleWorker {
             if (!empty($schedule->filters)) {
                 $filters = array_merge($schedule->filters, $filters);
             }
+            
+            // Add template_id for custom exports
+            if ($schedule->job_type === 'custom_export' && !empty($schedule->template_id)) {
+                $filters['template_id'] = $schedule->template_id;
+            }
 
             // Create export job
             $job_id = Job::create(
