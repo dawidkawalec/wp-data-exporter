@@ -363,6 +363,12 @@
          * Open schedule modal (new or edit)
          */
         openScheduleModal: function(scheduleId) {
+            // Handle if called from click event
+            if (typeof scheduleId === 'object' && scheduleId.preventDefault) {
+                scheduleId.preventDefault();
+                scheduleId = null;
+            }
+            
             const $modal = $('#schedule-form-modal');
             const $form = $('#schedule-form');
             

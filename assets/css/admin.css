@@ -47,6 +47,26 @@
     height: 18px;
 }
 
+/* Fix all button icons alignment */
+.button .dashicons {
+    vertical-align: middle;
+    margin-top: -2px;
+    line-height: 1;
+}
+
+.button-primary .dashicons,
+.button-large .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+.button-small .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
 .export-form #submit-export:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -420,11 +440,17 @@
     z-index: -1;
 }
 
-/* Schedules Tab Buttons */
-.view-schedule-history-btn .dashicons {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
+/* Schedules Tab - Specific Button Alignment */
+#add-new-schedule {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+#run-cron-manually {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .woo-exporter-tab-schedules .no-schedules {
