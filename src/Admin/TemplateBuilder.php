@@ -204,11 +204,19 @@ class TemplateBuilder {
             var templateBuilderData = {
                 sampleOrders: [<?php echo implode(',', $sample_orders); ?>],
                 currentOrderIndex: 0,
+                ajax_url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                nonce: '<?php echo wp_create_nonce('woo_exporter_nonce'); ?>',
                 existingTemplate: <?php echo $template ? wp_json_encode([
                     'selected_fields' => $template->selected_fields,
                     'field_aliases' => $template->field_aliases,
                     'field_order' => $template->field_order
                 ]) : 'null'; ?>
+            };
+            
+            // Alias for compatibility
+            var wooExporterAdmin = {
+                ajax_url: templateBuilderData.ajax_url,
+                nonce: templateBuilderData.nonce
             };
         </script>
         <?php
