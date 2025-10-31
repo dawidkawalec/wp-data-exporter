@@ -501,17 +501,17 @@
     /* Scroll indicators - created by JavaScript */
     .scroll-gradient-indicator {
         position: absolute;
-        top: 0;
-        bottom: 0;
-        width: 300px;
-        background: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.5) 20%, rgba(255, 255, 255, 0.9) 60%, #ffffff 85%, #ffffff 100%);
+        top: 40px;
+        height: 300px;
+        width: 200px;
+        background: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.7) 30%, rgba(255, 255, 255, 0.95) 70%, #ffffff 100%);
         pointer-events: none;
         z-index: 10;
     }
     
     .scroll-arrow-indicator {
         position: absolute;
-        top: 110px;
+        top: 140px;
         width: 40px;
         height: 40px;
         background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%232271b1"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/><path d="M0 0h24v24H0V0z" fill="none"/></svg>');

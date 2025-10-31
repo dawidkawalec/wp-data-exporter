@@ -719,10 +719,9 @@
                 const clientWidth = $container[0].clientWidth;
                 
                 // Position gradient and arrow at right edge of viewport
-                // Gradient wychodzi 50px za ekran (nie widać prześwitu przy scrollu)
                 const rightOffset = scrollLeft + clientWidth;
-                $gradient.css('left', (rightOffset - 250) + 'px');
-                $arrow.css('left', (rightOffset - 70) + 'px');
+                $gradient.css('left', (rightOffset - 200) + 'px');
+                $arrow.css('left', (rightOffset - 60) + 'px');
                 
                 // Hide when scrolled to end
                 if (scrollLeft + clientWidth >= scrollWidth - 10) {
