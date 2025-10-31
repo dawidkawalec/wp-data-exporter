@@ -65,6 +65,18 @@ class Migration {
         } else {
             error_log('WOO_EXPORTER_MIGRATION: Schedules table exists');
         }
+
+        // Check if templates table exists
+        $templates_table = Schema::get_templates_table_name();
+        $templates_exists = $wpdb->get_var("SHOW TABLES LIKE '{$templates_table}'") === $templates_table;
+
+        if (!$templates_exists) {
+            error_log('WOO_EXPORTER_MIGRATION: Creating templates table...');
+            // Create it by re-running create_tables (it has IF NOT EXISTS)
+            Schema::create_tables();
+        } else {
+            error_log('WOO_EXPORTER_MIGRATION: Templates table exists');
+        }
     }
 
     /**
