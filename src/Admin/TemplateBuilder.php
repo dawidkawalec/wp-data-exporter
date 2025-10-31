@@ -163,11 +163,10 @@ class TemplateBuilder {
                 </div>
 
                 <div class="template-field-picker" style="background: #fff; padding: 20px; margin-bottom: 20px; border: 1px solid #ccd0d4;">
-                    <h2 style="margin-top: 0; margin-bottom: 15px;"><?php esc_html_e('Wybierz pola do eksportu', 'woo-data-exporter'); ?></h2>
-                    
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;" class="template-picker-grid">
                         <!-- Left: Available Fields with inline preview -->
                         <div class="available-fields-panel">
+                            <h3 style="margin-top: 0; margin-bottom: 10px;"><?php esc_html_e('Dostępne pola', 'woo-data-exporter'); ?></h3>
                             <input type="text" id="field-search" class="regular-text" placeholder="🔍 Szukaj pola..." style="width: 100%; margin-bottom: 15px;">
                             <div class="fields-list" style="max-height: 600px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;">
                                 <?php foreach ($grouped_fields as $category => $fields): ?>

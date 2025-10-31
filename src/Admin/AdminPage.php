@@ -150,6 +150,10 @@ class AdminPage {
                    class="nav-tab <?php echo $active_tab === 'templates' ? 'nav-tab-active' : ''; ?>">
                     <?php esc_html_e('Szablony Eksportów', 'woo-data-exporter'); ?>
                 </a>
+                <a href="?page=<?php echo esc_attr(self::PAGE_SLUG); ?>&tab=about" 
+                   class="nav-tab <?php echo $active_tab === 'about' ? 'nav-tab-active' : ''; ?>">
+                    <?php esc_html_e('O wtyczce', 'woo-data-exporter'); ?>
+                </a>
             </nav>
 
             <div class="tab-content">
@@ -160,6 +164,8 @@ class AdminPage {
                     $this->render_schedules_tab();
                 } elseif ($active_tab === 'templates') {
                     $this->render_templates_tab();
+                } elseif ($active_tab === 'about') {
+                    $this->render_about_tab();
                 } else {
                     $this->render_history_tab();
                 }
@@ -733,6 +739,118 @@ class AdminPage {
                 </table>
             <?php endif; ?>
         </div>
+        <?php
+    }
+
+    /**
+     * Render about tab
+     */
+    private function render_about_tab(): void {
+        ?>
+        <div class="woo-exporter-tab-about">
+            <div style="max-width: 900px;">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px; border-radius: 8px; margin-bottom: 30px; text-align: center;">
+                    <h2 style="color: white; margin: 0 0 10px 0; font-size: 32px;">WooCommerce Advanced Data Exporter</h2>
+                    <p style="font-size: 18px; margin: 0; opacity: 0.9;">Profesjonalne narzędzie do eksportu danych z przetwarzaniem w tle</p>
+                    <p style="margin: 20px 0 0 0; opacity: 0.8;">Wersja <?php echo esc_html(WOO_EXPORTER_VERSION); ?></p>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;" class="about-grid">
+                    <div style="background: #fff; padding: 30px; border: 1px solid #ccd0d4; border-radius: 4px;">
+                        <h3 style="margin-top: 0; color: #2271b1;">👨‍💻 Deweloper</h3>
+                        <p><strong>Dawid Kawalec</strong></p>
+                        <p style="color: #646970; margin: 10px 0;">Full-stack developer specjalizujący się w rozwiązaniach WordPress i WooCommerce.</p>
+                        <p>
+                            <a href="https://github.com/dawidkawalec" target="_blank" rel="noopener" class="button">
+                                GitHub Profile
+                            </a>
+                        </p>
+                    </div>
+
+                    <div style="background: #fff; padding: 30px; border: 1px solid #ccd0d4; border-radius: 4px;">
+                        <h3 style="margin-top: 0; color: #2271b1;">🏢 Firma</h3>
+                        <p><strong>important.is</strong></p>
+                        <p style="color: #646970; margin: 10px 0;">Agencja produktowa specjalizująca się w projektowaniu i programowaniu rozwiązań dla biznesu.</p>
+                        <p>
+                            <a href="https://important.is" target="_blank" rel="noopener" class="button button-primary">
+                                Odwiedź Stronę
+                            </a>
+                        </p>
+                    </div>
+                </div>
+
+                <div style="background: #fff; padding: 30px; border: 1px solid #ccd0d4; border-radius: 4px; margin-bottom: 30px;">
+                    <h3 style="margin-top: 0;">🚀 Możliwości</h3>
+                    <ul style="columns: 2; column-gap: 30px; list-style-position: inside;">
+                        <li>Background processing (WP Cron)</li>
+                        <li>Batch processing (500 rek./iteracja)</li>
+                        <li>3 typy eksportów (Marketing, Analytics, Custom)</li>
+                        <li>Email notifications (multiple recipients)</li>
+                        <li>Zaplanowane raporty (cykliczne)</li>
+                        <li>Kreator szablonów (90+ pól)</li>
+                        <li>Flatten serialized fields</li>
+                        <li>Podgląd CSV z paginacją</li>
+                        <li>Auto-migracja bazy danych</li>
+                        <li>Unified historia</li>
+                        <li>Responsywny design (RWD)</li>
+                        <li>Debug tools + logging</li>
+                    </ul>
+                </div>
+
+                <div style="background: #fff; padding: 30px; border: 1px solid #ccd0d4; border-radius: 4px; margin-bottom: 30px;">
+                    <h3 style="margin-top: 0;">📊 Statystyki Projektu</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px;">
+                        <div style="text-align: center; padding: 20px; background: #f0f6fc; border-radius: 4px;">
+                            <div style="font-size: 36px; font-weight: bold; color: #2271b1;">6,400+</div>
+                            <div style="color: #646970; font-size: 14px;">Linii kodu</div>
+                        </div>
+                        <div style="text-align: center; padding: 20px; background: #f0f6fc; border-radius: 4px;">
+                            <div style="font-size: 36px; font-weight: bold; color: #2271b1;">18</div>
+                            <div style="color: #646970; font-size: 14px;">Plików źródłowych</div>
+                        </div>
+                        <div style="text-align: center; padding: 20px; background: #f0f6fc; border-radius: 4px;">
+                            <div style="font-size: 36px; font-weight: bold; color: #2271b1;">3</div>
+                            <div style="color: #646970; font-size: 14px;">Tabele bazy</div>
+                        </div>
+                        <div style="text-align: center; padding: 20px; background: #f0f6fc; border-radius: 4px;">
+                            <div style="font-size: 36px; font-weight: bold; color: #2271b1;">30+</div>
+                            <div style="color: #646970; font-size: 14px;">Endpointów AJAX</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: #fff; padding: 30px; border: 1px solid #ccd0d4; border-radius: 4px;">
+                    <h3 style="margin-top: 0;">📄 Dokumentacja i Wsparcie</h3>
+                    <p>Pełna dokumentacja techniczna dostępna w pliku <code>README.md</code> w katalogu wtyczki.</p>
+                    <p>
+                        <a href="https://github.com/dawidkawalec/wp-data-exporter" target="_blank" rel="noopener" class="button">
+                            <span class="dashicons dashicons-github" style="margin-top: -3px;"></span>
+                            Zobacz na GitHub
+                        </a>
+                        <a href="<?php echo esc_url(WOO_EXPORTER_PLUGIN_DIR . 'README.md'); ?>" class="button" target="_blank">
+                            <span class="dashicons dashicons-media-document"></span>
+                            README.md
+                        </a>
+                    </p>
+                    
+                    <h4 style="margin-top: 30px;">Stack Technologiczny:</h4>
+                    <p style="color: #646970;">
+                        PHP 8.0+ • WordPress 6.5+ • WooCommerce 8.0+ • Composer • PSR-4 • League CSV • MySQL • JavaScript (ES6+) • jQuery • CSS Grid • Flexbox
+                    </p>
+                    
+                    <h4 style="margin-top: 20px;">Licencja:</h4>
+                    <p style="color: #646970;">GPL-3.0-or-later</p>
+                </div>
+            </div>
+        </div>
+        
+        <style>
+        @media (max-width: 782px) {
+            .about-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+        </style>
         <?php
     }
 }

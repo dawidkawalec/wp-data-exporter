@@ -467,20 +467,29 @@
         max-width: 100%;
     }
     
-    /* Tables */
+    /* Tables - horizontal scroll container */
+    .woo-exporter-admin table.wp-list-table {
+        min-width: 600px;
+    }
+    
+    /* Wrap tables in scroll container */
+    .woo-exporter-tab-history > table,
+    .woo-exporter-tab-schedules > table,
+    .woo-exporter-tab-templates > table {
+        display: block;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
     .wp-list-table {
         font-size: 12px;
     }
     
     .wp-list-table th,
     .wp-list-table td {
-        padding: 8px 4px;
-    }
-    
-    /* Hide less important columns on mobile */
-    .wp-list-table th:nth-child(n+5),
-    .wp-list-table td:nth-child(n+5) {
-        display: none;
+        padding: 8px 6px;
+        white-space: nowrap;
     }
     
     /* Buttons */

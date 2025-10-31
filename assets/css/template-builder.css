@@ -9,12 +9,6 @@
     gap: 20px;
 }
 
-@media (max-width: 1200px) {
-    .template-picker-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
 /* Selected fields - always horizontal buttons */
 .selected-field-item {
     min-height: 60px;
@@ -27,15 +21,84 @@
     margin-left: 10px;
 }
 
+/* Tablet */
+@media (max-width: 1200px) {
+    .template-picker-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Mobile */
 @media (max-width: 782px) {
     .template-builder-wrap h1 {
-        font-size: 24px;
+        font-size: 20px !important;
+        margin-bottom: 10px !important;
     }
     
+    .template-builder-wrap h2 {
+        font-size: 18px !important;
+    }
+    
+    .template-builder-wrap h3 {
+        font-size: 16px !important;
+    }
+    
+    /* Nav tabs na mobile */
+    .template-builder-wrap .nav-tab-wrapper {
+        border: none;
+        margin-bottom: 10px;
+    }
+    
+    .template-builder-wrap .nav-tab {
+        font-size: 11px;
+        padding: 6px 8px;
+        margin: 2px;
+        display: inline-block;
+    }
+    
+    /* Sections */
     .template-basic-info,
-    .template-field-picker,
-    .template-preview-panel {
+    .template-field-picker {
         padding: 15px !important;
+        margin-bottom: 15px !important;
+    }
+    
+    /* Form table */
+    .template-basic-info .form-table th,
+    .template-basic-info .form-table td {
+        display: block !important;
+        width: 100% !important;
+        padding: 8px 0 !important;
+    }
+    
+    .template-basic-info .form-table th {
+        padding-bottom: 4px !important;
+    }
+    
+    .template-basic-info input[type="text"],
+    .template-basic-info textarea {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    /* Preview selector */
+    .template-builder-wrap [style*="background: #f0f6fc"] {
+        padding: 10px !important;
+    }
+    
+    .template-builder-wrap [style*="background: #f0f6fc"] > div {
+        flex-wrap: wrap;
+        gap: 8px !important;
+    }
+    
+    .template-builder-wrap #preview-order-id {
+        width: 100px !important;
+    }
+    
+    /* Field picker */
+    .template-picker-grid {
+        grid-template-columns: 1fr !important;
+        gap: 15px !important;
     }
     
     .available-fields-panel,
@@ -43,19 +106,62 @@
         font-size: 13px;
     }
     
+    .fields-list {
+        max-height: 400px !important;
+    }
+    
     .field-item {
         padding: 6px 0 !important;
     }
     
-    .selected-field-item {
-        padding: 8px !important;
-        min-height: auto;
+    .field-item code {
+        font-size: 11px !important;
+        word-break: break-word;
     }
     
-    .button-small {
+    .field-preview-value {
+        font-size: 10px !important;
+    }
+    
+    /* Selected fields */
+    .selected-field-item {
+        padding: 8px !important;
+        min-height: auto !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+    }
+    
+    .selected-field-item > div:first-child {
+        margin-bottom: 8px;
+        width: 100%;
+    }
+    
+    .selected-field-item > div:last-child {
+        width: 100%;
+        justify-content: flex-end;
+        margin-left: 0 !important;
+    }
+    
+    .selected-field-item code {
+        font-size: 11px !important;
+    }
+    
+    /* Buttons */
+    .template-builder-wrap .button-large {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .template-builder-wrap .button-small {
         font-size: 11px;
-        padding: 2px 8px;
-        height: auto;
+        padding: 4px 10px;
+    }
+    
+    /* Submit area */
+    .template-builder-wrap .submit {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
     }
 }
 

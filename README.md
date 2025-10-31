@@ -1,24 +1,51 @@
 # WooCommerce Advanced Data Exporter
 
-Zaawansowana wtyczka WordPress do eksportu danych WooCommerce z przetwarzaniem w tle, zaprojektowana do obsługi dużych sklepów bez ryzyka timeout'ów.
+Profesjonalne narzędzie do eksportu danych WooCommerce z przetwarzaniem w tle, batch processing i niestandardowymi szablonami. Zaprojektowane do obsługi dużych sklepów bez ryzyka timeout'ów.
+
+**Opracowane przez:** [Dawid Kawalec](https://github.com/dawidkawalec)  
+**Firma:** [important.is](https://important.is) - Agencja produktowa specjalizująca się w projektowaniu i programowaniu rozwiązań dla biznesu
 
 ## 🎯 Funkcje
 
-- **Przetwarzanie w Tle**: Wszystkie eksporty są przetwarzane asynchronicznie przez WP Cron
-- **Batch Processing**: Dane są pobierane i zapisywane w paczkach (500 rekordów), aby uniknąć problemów z pamięcią
-- **Dwa Typy Eksportu**:
+### Eksporty
+- **Background Processing**: Asynchroniczne przetwarzanie przez WP Cron (co 5 minut)
+- **Batch Processing**: 500 rekordów na iterację - bez timeout'ów nawet dla milionów zamówień
+- **3 Typy Eksportów**:
   - **Marketing**: Agregowane dane klientów (jeden wiersz per email)
-  - **Analityka**: Szczegółowe dane zamówień (jeden wiersz per produkt)
-- **Custom Email Notifications**: Wysyłka powiadomień na dowolne adresy email (wiele odbiorców)
-- **Cykliczne Raporty**: Automatyczne generowanie raportów według harmonogramu
-  - Co X dni (codziennie, co tydzień, co 2 tygodnie, etc.)
-  - Co tydzień w określony dzień (poniedziałek, wtorek, etc.)
-  - Co miesiąc w określony dzień (1., 15., ostatni dzień, etc.)
-- **Zarządzanie Harmonogramami**: Edycja, pauza, wznowienie, usuwanie
-- **Historia Harmonogramów**: Zobacz wszystkie raporty wygenerowane z danego harmonogramu
-- **Podgląd CSV z Paginacją**: Przeglądaj dane bezpośrednio w panelu (100 wierszy/strona)
-- **Bezpieczne Pobieranie**: Pliki chronione hashem i kontrolą uprawnień
-- **Historia Eksportów**: Przegląd wszystkich wygenerowanych eksportów z opcją usuwania
+  - **Analytics**: Szczegółowe dane zamówień (jeden wiersz per produkt)
+  - **Custom Templates**: Niestandardowe szablony z dowolnymi polami (90+ dostępnych pól)
+
+### Szablony Niestandardowe
+- **Kreator Wizualny**: Wybierz dokładnie te pola które Cię interesują
+- **Flatten Serialized Fields**: Automatyczne rozpakowywanie pól serialized (np. zgoda marketingowa)
+- **Grupowanie w Kategorie**: 🛒 Zamówienie, 📧 Billing, 📦 Shipping, 💳 Płatność, ⚙️ WooCommerce, ✨ Custom
+- **Live Preview**: Zobacz przykładowe wartości z prawdziwych zamówień
+- **Aliasy Kolumn**: Ustaw własne nazwy kolumn w CSV
+- **Search Real-time**: Szybkie wyszukiwanie pól
+- **Duplikacja**: Klonuj szablony jednym klikiem
+
+### Zaplanowane Raporty
+- **Cykliczne Generowanie**: Daily / Weekly / Monthly
+- **Elastyczna Częstotliwość**: Co X dni, określony dzień tygodnia, dzień miesiąca
+- **Email Notifications**: Wysyłka do wielu odbiorców (oddzielonych przecinkami)
+- **Zarządzanie**: Edycja, pauza/wznów, usuwanie harmonogramów
+- **Integracja z Szablonami**: Harmonogramy mogą używać custom templates
+
+### UX/UI
+- **Podgląd CSV z Paginacją**: Przeglądaj dane bezpośrednio w panelu (100 wierszy/strona, przyciski « ‹ › »)
+- **Unified Historia**: Wszystkie eksporty (ręczne + automatyczne) w jednym miejscu
+- **Submenu WordPress**: Szybki dostęp do wszystkich funkcji
+- **Responsywny Design**: Desktop, tablet, mobile - wszystko dostosowane
+- **Status Badges**: Wizualne oznaczenia statusów z animacjami
+- **Delete & Preview**: Usuwanie starych eksportów, podgląd bez pobierania
+
+### Bezpieczeństwo & Performance
+- **Bezpieczne Pobieranie**: Pliki chronione hashem i kontrolą uprawnień (7-day expiration)
+- **Nonce Verification**: Wszystkie żądania AJAX zabezpieczone
+- **Capability Checks**: Tylko użytkownicy z `manage_woocommerce`
+- **Auto-migracja**: Automatyczna aktualizacja schematu bazy danych
+- **Optimized SQL**: Bezpośrednie zapytania zamiast WooCommerce API
+- **Memory Management**: `unset()` po każdej paczce, stream-based CSV writing
 
 ## 📋 Wymagania
 
@@ -301,17 +328,70 @@ git pull origin main
 php composer.phar install --no-dev
 ```
 
-## 📞 Support
+## 📦 Production Build (TODO)
 
-- **Issues**: https://github.com/dawidkawalec/wp-data-exporter/issues
-- **Email**: [twój email]
+Dla wersji produkcyjnej (bez dev dependencies):
+
+```bash
+# 1. Clone repo
+git clone https://github.com/dawidkawalec/wp-data-exporter.git
+
+# 2. Install production dependencies
+cd wp-data-exporter
+composer install --no-dev --optimize-autoloader
+
+# 3. Create distributable ZIP
+# TODO: Dodać script build.sh który:
+# - Usunie .git, .gitignore, composer.json, composer.phar
+# - Zostawi tylko: vendor/, src/, assets/, woo-data-exporter.php, README.md
+# - Spakuje do woo-data-exporter-v1.0.0.zip
+```
+
+**Planowane na przyszłość:**
+- Automated build script
+- GitHub Releases z gotowymi ZIP
+- WordPress.org submission (opcjonalnie)
+
+## 📞 Support & Kontakt
+
+- **GitHub Issues**: https://github.com/dawidkawalec/wp-data-exporter/issues
+- **Dokumentacja**: Sprawdź zakładkę "O wtyczce" w panelu admina
+- **Deweloper**: [Dawid Kawalec](https://github.com/dawidkawalec)
+- **Firma**: [important.is](https://important.is) - Agencja produktowa
+
+## 🏢 O important.is
+
+**important.is** to agencja produktowa specjalizująca się w projektowaniu i programowaniu cyfrowych rozwiązań dla biznesu.
+
+**Zakres usług:**
+- Research & UX/UI Design
+- Branding & Communication Design
+- Web Development & Product Design
+- AI Integration
+- 3D Projektowanie
+
+**Nasza misja:** Tworzymy cyfrowe produkty, które przyspieszają wzrost Twojej firmy - bez zbędnych formalności, za to z pełnym zaangażowaniem.
+
+**Więcej informacji:** https://important.is
+
+## 👨‍💻 O Autorze
+
+**Dawid Kawalec** - Full-stack developer specjalizujący się w rozwiązaniach WordPress i WooCommerce. Twórca wtyczki WooCommerce Advanced Data Exporter.
 
 ## 📄 Licencja
 
-GPL-3.0-or-later
+GPL-3.0-or-later - https://www.gnu.org/licenses/gpl-3.0.html
 
-## 🙏 Credits
+## 🙏 Credits & Technologie
 
-- **League CSV**: https://csv.thephpleague.com/
-- **Autor**: Dawid Kawalec
+- **League CSV** (9.x): https://csv.thephpleague.com/
+- **WordPress** (6.5+): https://wordpress.org
+- **WooCommerce** (8.0+): https://woocommerce.com
+- **Composer**: Dependency management
+- **PSR-4**: Autoloading standard
+
+---
+
+**© 2025 Dawid Kawalec | important.is**  
+*Projektowanie i programowanie dla biznesu*
 
