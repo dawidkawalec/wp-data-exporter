@@ -4,29 +4,20 @@
 
 (function($) {
     'use strict';
-    
-    console.log('template-builder.js loaded!');
-    console.log('jQuery available:', typeof $ !== 'undefined');
-    console.log('templateBuilderData:', typeof templateBuilderData !== 'undefined' ? templateBuilderData : 'NOT DEFINED');
 
     const TemplateBuilder = {
         selectedFields: [],
         fieldAliases: {},
         
         init: function() {
-            console.log('TemplateBuilder.init() called');
-            
             // Load existing template data if editing
             if (typeof templateBuilderData !== 'undefined' && templateBuilderData.existingTemplate) {
                 this.selectedFields = templateBuilderData.existingTemplate.selected_fields || [];
                 this.fieldAliases = templateBuilderData.existingTemplate.field_aliases || {};
-                console.log('Loaded existing template:', this.selectedFields.length, 'fields');
             }
             
             this.bindEvents();
             this.updateSelectedList();
-            
-            console.log('TemplateBuilder initialized successfully');
         },
 
         bindEvents: function() {
@@ -191,10 +182,6 @@
         loadPreview: function() {
             const orderId = $('#preview-order-id').val();
             
-            console.log('loadPreview called, orderId:', orderId);
-            console.log('AJAX URL:', wooExporterAdmin.ajax_url);
-            console.log('Nonce:', wooExporterAdmin.nonce);
-            
             if (!orderId) {
                 $('#preview-status').text('Wpisz ID zamówienia').css('color', '#d63638');
                 return;
@@ -202,33 +189,25 @@
             
             $('#preview-status').html('<span class="woo-exporter-loading"></span> Ładowanie...').css('color', '#646970');
             
-            const requestData = {
-                action: 'preview_template_values',
-                nonce: wooExporterAdmin.nonce,
-                order_id: orderId,
-                fields: JSON.stringify([]) // Empty array as JSON string
-            };
-            
-            console.log('Sending request:', requestData);
-            
             $.ajax({
                 url: wooExporterAdmin.ajax_url,
                 type: 'POST',
-                data: requestData,
+                data: {
+                    action: 'preview_template_values',
+                    nonce: wooExporterAdmin.nonce,
+                    order_id: orderId,
+                    fields: JSON.stringify([])
+                },
                 success: function(response) {
-                    console.log('Preview response:', response);
                     if (response.success) {
                         TemplateBuilder.renderPreviewTable(response.data);
                         $('#preview-status').text('✓ Załadowano zamówienie #' + orderId).css('color', '#00a32a');
                     } else {
-                        console.error('Preview failed:', response.data);
                         $('#preview-status').text('Błąd: ' + (response.data.message || 'Nie znaleziono')).css('color', '#d63638');
                     }
                 },
-                error: function(xhr, status, error) {
-                    console.error('AJAX Error:', xhr, status, error);
-                    console.error('Response text:', xhr.responseText);
-                    $('#preview-status').text('Błąd: ' + xhr.status + ' - Sprawdź console (F12)').css('color', '#d63638');
+                error: function(xhr) {
+                    $('#preview-status').text('Błąd połączenia: ' + xhr.status).css('color', '#d63638');
                 }
             });
         },
@@ -287,8 +266,6 @@
             const isEditing = templateId && templateId !== '' && templateId !== '0';
             const action = isEditing ? 'update_template' : 'create_template';
             
-            console.log('Template ID from form:', templateId, '| Is editing:', isEditing, '| Action:', action);
-            
             const formData = {
                 action: action,
                 nonce: wooExporterAdmin.nonce,
@@ -304,19 +281,11 @@
                 formData.template_id = templateId;
             }
             
-            console.log('Saving template - Full details:');
-            console.log('  action:', formData.action);
-            console.log('  template_id:', formData.template_id);
-            console.log('  name:', formData.name);
-            console.log('  selected_fields:', formData.selected_fields);
-            console.log('  Full formData:', formData);
-            
             $.ajax({
                 url: wooExporterAdmin.ajax_url,
                 type: 'POST',
                 data: formData,
                 success: function(response) {
-                    console.log('Save response:', response);
                     if (response.success) {
                         alert('✅ ' + response.data.message);
                         window.location.href = 'admin.php?page=woo-data-exporter&tab=templates';
@@ -324,9 +293,8 @@
                         alert('❌ ' + (response.data.message || 'Błąd zapisu'));
                     }
                 },
-                error: function(xhr, status, error) {
-                    console.error('Save error:', xhr.responseText);
-                    alert('Błąd: ' + xhr.status + ' - Sprawdź console');
+                error: function(xhr) {
+                    alert('Błąd połączenia: ' + xhr.status);
                 }
             });
         }

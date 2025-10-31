@@ -507,14 +507,11 @@
                 formData.template_id = $('#schedule_template_id').val();
             }
 
-            console.log('Sending schedule data:', formData);
-
             $.ajax({
                 url: wooExporterAdmin.ajax_url,
                 type: 'POST',
                 data: formData,
                 success: function(response) {
-                    console.log('Schedule response:', response);
                     if (response.success) {
                         alert('✅ ' + response.data.message);
                         WooExporter.closeScheduleModal();
@@ -523,10 +520,8 @@
                         alert('❌ ' + (response.data.message || 'Błąd zapisu.'));
                     }
                 },
-                error: function(xhr, status, error) {
-                    console.error('AJAX Error:', xhr, status, error);
-                    console.error('Response:', xhr.responseText);
-                    alert('Błąd połączenia: ' + error + '\n\nOtwórz Console (F12) aby zobaczyć szczegóły.');
+                error: function() {
+                    alert('Błąd połączenia. Spróbuj ponownie.');
                 }
             });
         },
