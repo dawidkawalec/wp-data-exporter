@@ -954,11 +954,16 @@ class AjaxHandler {
         $order_id = absint($_POST['order_id'] ?? 0);
         $fields = json_decode(stripslashes($_POST['fields'] ?? '[]'), true);
 
-        if (!$order_id || empty($fields)) {
-            wp_send_json_error(['message' => 'Brak ID lub pól'], 400);
+        if (!$order_id) {
+            wp_send_json_error(['message' => 'Brak ID zamówienia'], 400);
         }
 
+        // Empty fields = fetch ALL (for preview)
         $values = \WooExporter\Export\MetaScanner::get_sample_values($order_id, $fields);
+
+        if (empty($values)) {
+            wp_send_json_error(['message' => 'Nie znaleziono zamówienia'], 404);
+        }
 
         wp_send_json_success(['values' => $values]);
     }

@@ -57,13 +57,13 @@ class TemplateBuilder {
     }
 
     /**
-     * Add template builder submenu (hidden)
+     * Add template builder submenu
      */
     public function add_submenu_page(): void {
         add_submenu_page(
-            null, // Hidden from menu
+            'woo-data-exporter', // Parent menu slug
             __('Kreator Szablonu', 'woo-data-exporter'),
-            __('Kreator Szablonu', 'woo-data-exporter'),
+            __('+ Kreator Szablonu', 'woo-data-exporter'),
             'manage_woocommerce',
             'woo-template-builder',
             [$this, 'render_builder_page']
@@ -162,18 +162,22 @@ class TemplateBuilder {
                     <h2 style="margin-top: 0;"><?php esc_html_e('Podgląd wartości', 'woo-data-exporter'); ?></h2>
                     
                     <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
-                        <label><?php esc_html_e('Zamówienie:', 'woo-data-exporter'); ?></label>
-                        <button type="button" id="prev-order" class="button">
-                            <span class="dashicons dashicons-arrow-left-alt2"></span>
-                        </button>
+                        <label><?php esc_html_e('Zamówienie ID:', 'woo-data-exporter'); ?></label>
                         <input type="number" id="preview-order-id" value="<?php echo esc_attr($current_order_id); ?>" 
-                               style="width: 100px; text-align: center;" placeholder="ID">
-                        <button type="button" id="next-order" class="button">
-                            <span class="dashicons dashicons-arrow-right-alt2"></span>
+                               style="width: 120px; text-align: center;" placeholder="Wpisz ID">
+                        <button type="button" id="load-order-preview" class="button button-secondary">
+                            <span class="dashicons dashicons-search"></span>
+                            <?php esc_html_e('Załaduj Podgląd', 'woo-data-exporter'); ?>
                         </button>
-                        <button type="button" id="load-order-preview" class="button button-secondary"><?php esc_html_e('Załaduj', 'woo-data-exporter'); ?></button>
                         <span id="preview-status" style="margin-left: 10px; color: #646970;"></span>
                     </div>
+                    <p class="description" style="margin-top: -10px; margin-bottom: 15px;">
+                        <?php esc_html_e('Przykładowe ID zamówień:', 'woo-data-exporter'); ?>
+                        <?php foreach (array_slice($sample_orders, 0, 5) as $sample_id): ?>
+                            <a href="#" class="quick-preview-link" data-order-id="<?php echo esc_attr($sample_id); ?>" 
+                               style="margin-right: 10px;"><?php echo esc_html($sample_id); ?></a>
+                        <?php endforeach; ?>
+                    </p>
 
                     <div id="preview-table-container" style="overflow-x: auto; max-height: 400px; overflow-y: auto; border: 1px solid #ddd;">
                         <p style="text-align: center; color: #646970; padding: 40px;">

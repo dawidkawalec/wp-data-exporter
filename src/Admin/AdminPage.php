@@ -35,6 +35,7 @@ class AdminPage {
      * Add menu page to WordPress admin
      */
     public function add_menu_page(): void {
+        // Main menu page redirects to new-export tab by default
         add_menu_page(
             __('Eksport Danych WooCommerce', 'woo-data-exporter'),
             __('Eksport Danych', 'woo-data-exporter'),
@@ -45,16 +46,17 @@ class AdminPage {
             56
         );
         
-        // Add submenus for easy access
+        // Rename first submenu (auto-created duplicate)
         add_submenu_page(
             self::PAGE_SLUG,
             __('Nowy Eksport', 'woo-data-exporter'),
             __('Nowy Eksport', 'woo-data-exporter'),
             'manage_woocommerce',
-            self::PAGE_SLUG . '&tab=new-export',
+            self::PAGE_SLUG,
             [$this, 'render_page']
         );
         
+        // Other submenus
         add_submenu_page(
             self::PAGE_SLUG,
             __('Historia Eksportów', 'woo-data-exporter'),

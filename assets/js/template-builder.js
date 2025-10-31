@@ -31,14 +31,20 @@
             $(document).on('click', '.field-group-toggle', this.toggleGroup.bind(this));
             
             // Preview navigation
-            $('#prev-order').on('click', this.prevOrder.bind(this));
-            $('#next-order').on('click', this.nextOrder.bind(this));
             $('#load-order-preview').on('click', this.loadPreview.bind(this));
             $('#preview-order-id').on('keypress', function(e) {
                 if (e.which === 13) {
                     e.preventDefault();
                     TemplateBuilder.loadPreview();
                 }
+            });
+            
+            // Quick preview links
+            $(document).on('click', '.quick-preview-link', function(e) {
+                e.preventDefault();
+                const orderId = $(this).data('order-id');
+                $('#preview-order-id').val(orderId);
+                TemplateBuilder.loadPreview();
             });
             
             // Form submit
@@ -168,30 +174,6 @@
             $('.field-checkbox[value="' + field + '"]').prop('checked', false);
             
             this.updateSelectedList();
-        },
-
-        /**
-         * Previous order
-         */
-        prevOrder: function() {
-            const currentIndex = templateBuilderData.currentOrderIndex;
-            const newIndex = currentIndex > 0 ? currentIndex - 1 : templateBuilderData.sampleOrders.length - 1;
-            
-            templateBuilderData.currentOrderIndex = newIndex;
-            $('#preview-order-id').val(templateBuilderData.sampleOrders[newIndex]);
-            this.loadPreview();
-        },
-
-        /**
-         * Next order
-         */
-        nextOrder: function() {
-            const currentIndex = templateBuilderData.currentOrderIndex;
-            const newIndex = currentIndex < templateBuilderData.sampleOrders.length - 1 ? currentIndex + 1 : 0;
-            
-            templateBuilderData.currentOrderIndex = newIndex;
-            $('#preview-order-id').val(templateBuilderData.sampleOrders[newIndex]);
-            this.loadPreview();
         },
 
         /**
