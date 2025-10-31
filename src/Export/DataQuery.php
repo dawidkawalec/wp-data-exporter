@@ -75,8 +75,6 @@ class DataQuery {
         }
 
         return $results;
-
-        // This is now handled in get_marketing_data
     }
 
     /**
