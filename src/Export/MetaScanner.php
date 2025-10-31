@@ -20,7 +20,7 @@ class MetaScanner {
      * Scan all available meta fields from recent orders
      *
      * @param int $limit Number of orders to scan
-     * @return array Grouped meta fields
+     * @return array Grouped meta fields (includes flattened serialized fields)
      */
     public static function scan_available_fields(int $limit = 100): array {
         global $wpdb;
@@ -38,7 +38,73 @@ class MetaScanner {
             LIMIT %d
         ", $limit * 10)); // *10 bo to unikalne klucze, nie rekordy
 
-        return self::group_meta_keys($meta_keys);
+        // Flatten serialized fields
+        $flattened_keys = self::flatten_serialized_fields($meta_keys);
+
+        return self::group_meta_keys($flattened_keys);
+    }
+
+    /**
+     * Flatten serialized fields into individual sub-fields
+     *
+     * @param array $meta_keys Original meta keys
+     * @return array Expanded meta keys (includes virtual fields)
+     */
+    private static function flatten_serialized_fields(array $meta_keys): array {
+        global $wpdb;
+        
+        $flattened = [];
+        $serialized_candidates = ['_additional_terms', '_woo_fakturownia_faktura', 'pys_enrich_data'];
+
+        foreach ($meta_keys as $key) {
+            $flattened[] = $key;
+            
+            // Check if this is a known serialized field
+            if (in_array($key, $serialized_candidates)) {
+                // Get sample value to inspect structure
+                $sample = $wpdb->get_var($wpdb->prepare("
+                    SELECT pm.meta_value
+                    FROM {$wpdb->postmeta} pm
+                    INNER JOIN {$wpdb->posts} p ON pm.post_id = p.ID
+                    WHERE p.post_type = 'shop_order'
+                    AND pm.meta_key = %s
+                    AND pm.meta_value IS NOT NULL
+                    AND pm.meta_value != ''
+                    ORDER BY p.post_date DESC
+                    LIMIT 1
+                ", $key));
+
+                if ($sample) {
+                    $parsed = @unserialize($sample);
+                    
+                    if (is_array($parsed)) {
+                        // Create virtual fields for each sub-key
+                        foreach ($parsed as $sub_key => $sub_value) {
+                            if (is_array($sub_value)) {
+                                // Handle nested arrays (like checkout fields)
+                                if (isset($sub_value['name'])) {
+                                    // Create field for this checkbox
+                                    $virtual_field = $key . '__' . sanitize_key($sub_value['name']);
+                                    $flattened[] = $virtual_field;
+                                } else {
+                                    // Generic nested array
+                                    foreach (array_keys($sub_value) as $nested_key) {
+                                        $virtual_field = $key . '__' . $sub_key . '__' . $nested_key;
+                                        $flattened[] = $virtual_field;
+                                    }
+                                }
+                            } else {
+                                // Simple key-value
+                                $virtual_field = $key . '__' . $sub_key;
+                                $flattened[] = $virtual_field;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return array_unique($flattened);
     }
 
     /**
@@ -128,50 +194,95 @@ class MetaScanner {
         
         $samples['order_total'] = $order_total ?: '';
 
+        // Fetch ALL meta
+        $all_meta = $wpdb->get_results($wpdb->prepare("
+            SELECT meta_key, meta_value
+            FROM {$wpdb->postmeta}
+            WHERE post_id = %d
+            ORDER BY meta_key
+        ", $order_id));
+
+        $raw_meta = [];
+        foreach ($all_meta as $row) {
+            $raw_meta[$row->meta_key] = $row->meta_value;
+        }
+
         // If specific keys requested
         if (!empty($meta_keys)) {
-            $meta_keys_filtered = array_filter($meta_keys, function($k) {
-                return !in_array($k, ['order_id', 'order_date', 'order_status', 'order_total']);
-            });
-            
-            if (!empty($meta_keys_filtered)) {
-                $placeholders = implode(',', array_fill(0, count($meta_keys_filtered), '%s'));
-                
-                $query = $wpdb->prepare("
-                    SELECT meta_key, meta_value
-                    FROM {$wpdb->postmeta}
-                    WHERE post_id = %d
-                    AND meta_key IN ({$placeholders})
-                ", array_merge([$order_id], $meta_keys_filtered));
-
-                $results = $wpdb->get_results($query);
-
-                foreach ($results as $row) {
-                    $samples[$row->meta_key] = $row->meta_value;
-                }
-
-                // Add empty values for keys not found
-                foreach ($meta_keys_filtered as $key) {
-                    if (!isset($samples[$key])) {
-                        $samples[$key] = '';
-                    }
+            foreach ($meta_keys as $key) {
+                // Check if it's a virtual field (parent__subkey)
+                if (strpos($key, '__') !== false) {
+                    $samples[$key] = self::extract_virtual_field($key, $raw_meta);
+                } elseif (isset($raw_meta[$key])) {
+                    $samples[$key] = $raw_meta[$key];
+                } else {
+                    $samples[$key] = '';
                 }
             }
         } else {
-            // Fetch ALL meta for preview
-            $all_meta = $wpdb->get_results($wpdb->prepare("
-                SELECT meta_key, meta_value
-                FROM {$wpdb->postmeta}
-                WHERE post_id = %d
-                ORDER BY meta_key
-            ", $order_id));
-
-            foreach ($all_meta as $row) {
-                $samples[$row->meta_key] = $row->meta_value;
+            // Preview mode - add flattened virtual fields
+            foreach ($raw_meta as $key => $value) {
+                $samples[$key] = $value;
+                
+                // Try to flatten serialized
+                $unserialized = @unserialize($value);
+                if (is_array($unserialized)) {
+                    foreach ($unserialized as $sub_key => $sub_value) {
+                        if (is_array($sub_value) && isset($sub_value['name'])) {
+                            $virtual_key = $key . '__' . sanitize_key($sub_value['name']);
+                            $samples[$virtual_key] = $sub_value['status'] == '1' ? 'tak' : 'nie';
+                        } elseif (!is_array($sub_value)) {
+                            $virtual_key = $key . '__' . $sub_key;
+                            $samples[$virtual_key] = $sub_value;
+                        }
+                    }
+                }
             }
         }
 
         return $samples;
+    }
+
+    /**
+     * Extract value from virtual field (parent__subkey)
+     *
+     * @param string $virtual_field Virtual field name (e.g., _additional_terms__zgoda_marketingowa)
+     * @param array $raw_meta Raw meta data
+     * @return string Extracted value
+     */
+    private static function extract_virtual_field(string $virtual_field, array $raw_meta): string {
+        $parts = explode('__', $virtual_field, 2);
+        if (count($parts) !== 2) {
+            return '';
+        }
+
+        list($parent_key, $sub_key) = $parts;
+
+        if (!isset($raw_meta[$parent_key])) {
+            return '';
+        }
+
+        $unserialized = @unserialize($raw_meta[$parent_key]);
+        if (!is_array($unserialized)) {
+            return '';
+        }
+
+        // Search for the sub_key
+        foreach ($unserialized as $item) {
+            if (is_array($item) && isset($item['name'])) {
+                $sanitized_name = sanitize_key($item['name']);
+                if ($sanitized_name === $sub_key) {
+                    return $item['status'] == '1' ? 'tak' : 'nie';
+                }
+            }
+        }
+
+        // Direct key access
+        if (isset($unserialized[$sub_key])) {
+            return is_string($unserialized[$sub_key]) ? $unserialized[$sub_key] : json_encode($unserialized[$sub_key]);
+        }
+
+        return '';
     }
 
     /**
