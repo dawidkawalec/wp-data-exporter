@@ -1,0 +1,16 @@
+.git
+.gitignore
+.cursor
+.DS_Store
+examples/
+debug-meta-keys.php
+composer.phar
+composer.json
+composer.lock
+build-production.sh
+.buildignore
+build/
+dist/
+node_modules/
+*.log
+
