@@ -63,7 +63,8 @@ class Migration {
             // Create it by re-running create_tables (it has IF NOT EXISTS)
             Schema::create_tables();
         } else {
-            error_log('WOO_EXPORTER_MIGRATION: Schedules table exists');
+            error_log('WOO_EXPORTER_MIGRATION: Schedules table exists, checking columns...');
+            self::ensure_schedules_columns();
         }
 
         // Check if templates table exists
@@ -100,6 +101,26 @@ class Migration {
             error_log('WOO_EXPORTER_MIGRATION: Adding schedule_id column...');
             $wpdb->query("ALTER TABLE {$table_name} ADD COLUMN schedule_id BIGINT(20) UNSIGNED NULL COMMENT 'ID harmonogramu (jeśli auto-generowane)' AFTER notification_email");
             $wpdb->query("ALTER TABLE {$table_name} ADD INDEX schedule_id_idx (schedule_id)");
+        }
+    }
+
+    /**
+     * Ensure schedules table has correct column types
+     */
+    private static function ensure_schedules_columns(): void {
+        global $wpdb;
+        $table_name = Schema::get_schedules_table_name();
+
+        if ($wpdb->get_var("SHOW TABLES LIKE '{$table_name}'") !== $table_name) {
+            return;
+        }
+
+        // Check start_date column type
+        $column_type = $wpdb->get_row("SHOW COLUMNS FROM {$table_name} LIKE 'start_date'");
+        
+        if ($column_type && strpos(strtolower($column_type->Type), 'date') !== false && strpos(strtolower($column_type->Type), 'datetime') === false) {
+            error_log('WOO_EXPORTER_MIGRATION: Updating start_date column to DATETIME...');
+            $wpdb->query("ALTER TABLE {$table_name} MODIFY COLUMN start_date DATETIME NOT NULL COMMENT 'Data i godzina rozpoczęcia'");
         }
     }
 

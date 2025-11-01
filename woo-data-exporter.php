@@ -1,10 +1,10 @@
 <?php
 /**
- * Plugin Name: WooCommerce Advanced Data Exporter
+ * Plugin Name: WooCommerce Data Exporter & Scheduler
  * Plugin URI: https://important.is
- * Description: Zaawansowany eksporter danych WooCommerce z przetwarzaniem w tle. Umożliwia generowanie raportów marketingowych, analitycznych i niestandardowych bez ryzyka timeout'ów.
- * Version: 1.0.0
- * Author: important.is, Dawid Kawalec
+ * Description: Profesjonalny eksporter danych WooCommerce z przetwarzaniem w tle, harmonogramami i niestandardowymi szablonami. Batch processing, email notifications i auto-migracja bazy.
+ * Version: 1.1.0
+ * Author: important.is
  * Author URI: https://important.is
  * Text Domain: woo-data-exporter
  * Domain Path: /languages
@@ -24,7 +24,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('WOO_EXPORTER_VERSION', '1.0.0');
+define('WOO_EXPORTER_VERSION', '1.1.0');
 define('WOO_EXPORTER_PLUGIN_FILE', __FILE__);
 define('WOO_EXPORTER_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WOO_EXPORTER_PLUGIN_URL', plugin_dir_url(__FILE__));

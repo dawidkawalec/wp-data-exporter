@@ -1,9 +1,11 @@
-# WooCommerce Advanced Data Exporter
+# WooCommerce Data Exporter & Scheduler
 
-Profesjonalne narzędzie do eksportu danych WooCommerce z przetwarzaniem w tle, batch processing i niestandardowymi szablonami. Zaprojektowane do obsługi dużych sklepów bez ryzyka timeout'ów.
+Profesjonalne narzędzie do eksportu danych WooCommerce z przetwarzaniem w tle, harmonogramami i niestandardowymi szablonami. Batch processing, auto-migracja bazy i zaawansowane funkcje dla sklepów każdej wielkości.
 
-**Agencja:** [important.is](https://important.is) - Projektowanie i programowanie dla biznesu  
-**Autor:** [Dawid Kawalec](https://kawalec.pl) - Full-stack WordPress & WooCommerce Developer
+**Version:** 1.1.0
+
+**Company:** [important.is](https://important.is) - Agencja produktowa tworząca cyfrowe rozwiązania dla biznesu  
+**Developer:** [Dawid Kawalec](https://kawalec.pl) - Full-stack WordPress & WooCommerce developer specjalizujący się w AI
 
 ## 🎯 Funkcje
 

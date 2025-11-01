@@ -761,16 +761,16 @@ class AdminPage {
         <div class="woo-exporter-tab-about">
             <div style="max-width: 900px;">
                 <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 40px; border-radius: 8px; margin-bottom: 30px; text-align: center;">
-                    <h2 style="color: white; margin: 0 0 10px 0; font-size: 32px; line-height: 1.3;">WooCommerce Advanced Data Exporter</h2>
+                    <h2 style="color: white; margin: 0 0 10px 0; font-size: 32px; line-height: 1.3;">WooCommerce Data Exporter & Scheduler</h2>
                     <p style="font-size: 18px; margin: 0; opacity: 0.9; line-height: 1.6;">Profesjonalne narzędzie do eksportu danych z przetwarzaniem w tle</p>
-                    <p style="margin: 20px 0 0 0; opacity: 0.7; font-size: 14px;">Wersja <?php echo esc_html(WOO_EXPORTER_VERSION); ?></p>
+                    <p style="margin: 20px 0 0 0; opacity: 0.7; font-size: 14px;">Version <?php echo esc_html(WOO_EXPORTER_VERSION); ?></p>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;" class="about-grid">
                     <div style="background: #fff; padding: 30px; border: 1px solid #ccd0d4; border-radius: 4px;">
-                        <h3 style="margin-top: 0; color: #2271b1; line-height: 1.4;">🏢 Agencja</h3>
+                        <h3 style="margin-top: 0; color: #2271b1; line-height: 1.4;">🏢 Company</h3>
                         <p style="line-height: 1.6;"><strong>important.is</strong></p>
-                        <p style="color: #646970; margin: 10px 0; line-height: 1.6;">Agencja produktowa specjalizująca się w projektowaniu i programowaniu rozwiązań dla biznesu. Tworzymy cyfrowe produkty, które działają.</p>
+                        <p style="color: #646970; margin: 10px 0; line-height: 1.6;">Agencja produktowa tworząca cyfrowe rozwiązania dla biznesu. Łączymy dane, myślenie produktowe i nowoczesne technologie, aby projektować efektywne interfejsy i systemy wspierające rozwój firm.</p>
                         <p>
                             <a href="https://important.is" target="_blank" rel="noopener" class="button button-primary">
                                 <span class="dashicons dashicons-admin-site"></span>
@@ -780,13 +780,13 @@ class AdminPage {
                     </div>
 
                     <div style="background: #fff; padding: 30px; border: 1px solid #ccd0d4; border-radius: 4px;">
-                        <h3 style="margin-top: 0; color: #2271b1; line-height: 1.4;">👨‍💻 Deweloper</h3>
+                        <h3 style="margin-top: 0; color: #2271b1; line-height: 1.4;">👨‍💻 Developer</h3>
                         <p style="line-height: 1.6;"><strong>Dawid Kawalec</strong></p>
-                        <p style="color: #646970; margin: 10px 0; line-height: 1.6;">Full-stack developer specjalizujący się w rozwiązaniach WordPress i WooCommerce. Autor wtyczki.</p>
+                        <p style="color: #646970; margin: 10px 0; line-height: 1.6;">Full-stack developer specjalizujący się w WordPress, WooCommerce i AI. Twórca autonomicznych systemów wykorzystujących sztuczną inteligencję do automatyzacji procesów biznesowych.</p>
                         <p>
                             <a href="https://kawalec.pl" target="_blank" rel="noopener" class="button">
                                 <span class="dashicons dashicons-admin-users"></span>
-                                Strona Autora
+                                kawalec.pl
                             </a>
                         </p>
                     </div>
@@ -814,11 +814,11 @@ class AdminPage {
                     <h3 style="margin-top: 0; line-height: 1.4;">📊 Statystyki Projektu</h3>
                     <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
                         <div style="text-align: center; padding: 20px; background: #f0f6fc; border-radius: 4px;">
-                            <div style="font-size: 36px; font-weight: bold; color: #2271b1; line-height: 1;">6,675</div>
+                            <div style="font-size: 36px; font-weight: bold; color: #2271b1; line-height: 1;">6,800+</div>
                             <div style="color: #646970; font-size: 14px; margin-top: 8px; line-height: 1.4;">Linii kodu</div>
                         </div>
                         <div style="text-align: center; padding: 20px; background: #f0f6fc; border-radius: 4px;">
-                            <div style="font-size: 36px; font-weight: bold; color: #2271b1; line-height: 1;">18</div>
+                            <div style="font-size: 36px; font-weight: bold; color: #2271b1; line-height: 1;">20</div>
                             <div style="color: #646970; font-size: 14px; margin-top: 8px; line-height: 1.4;">Plików źródłowych</div>
                         </div>
                         <div style="text-align: center; padding: 20px; background: #f0f6fc; border-radius: 4px;">
@@ -826,7 +826,7 @@ class AdminPage {
                             <div style="color: #646970; font-size: 14px; margin-top: 8px; line-height: 1.4;">Tabele bazy</div>
                         </div>
                         <div style="text-align: center; padding: 20px; background: #f0f6fc; border-radius: 4px;">
-                            <div style="font-size: 36px; font-weight: bold; color: #2271b1; line-height: 1;">35</div>
+                            <div style="font-size: 36px; font-weight: bold; color: #2271b1; line-height: 1;">48</div>
                             <div style="color: #646970; font-size: 14px; margin-top: 8px; line-height: 1.4;">Commitów</div>
                         </div>
                     </div>
