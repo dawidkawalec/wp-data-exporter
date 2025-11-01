@@ -784,9 +784,9 @@ class AdminPage {
                         <p style="line-height: 1.6;"><strong>Dawid Kawalec</strong></p>
                         <p style="color: #646970; margin: 10px 0; line-height: 1.6;">Full-stack developer specjalizujący się w WordPress, WooCommerce i AI. Twórca autonomicznych systemów wykorzystujących sztuczną inteligencję do automatyzacji procesów biznesowych.</p>
                         <p>
-                            <a href="https://kawalec.pl" target="_blank" rel="noopener" class="button">
-                                <span class="dashicons dashicons-admin-users"></span>
-                                kawalec.pl
+                            <a href="https://kawalec.pl" target="_blank" rel="noopener" class="button button-primary">
+                                <span class="dashicons dashicons-admin-site"></span>
+                                Odwiedź Stronę
                             </a>
                         </p>
                     </div>
@@ -826,9 +826,58 @@ class AdminPage {
                             <div style="color: #646970; font-size: 14px; margin-top: 8px; line-height: 1.4;">Tabele bazy</div>
                         </div>
                         <div style="text-align: center; padding: 20px; background: #f0f6fc; border-radius: 4px;">
-                            <div style="font-size: 36px; font-weight: bold; color: #2271b1; line-height: 1;">48</div>
+                            <div style="font-size: 36px; font-weight: bold; color: #2271b1; line-height: 1;">52</div>
                             <div style="color: #646970; font-size: 14px; margin-top: 8px; line-height: 1.4;">Commitów</div>
                         </div>
+                    </div>
+                </div>
+
+                <div style="background: #fff; padding: 30px; border: 1px solid #ccd0d4; border-radius: 4px; margin-bottom: 30px;">
+                    <h3 style="margin-top: 0; line-height: 1.4;">❓ FAQ - Najczęściej Zadawane Pytania</h3>
+                    
+                    <div style="margin-bottom: 25px;">
+                        <h4 style="color: #2271b1; margin-bottom: 8px;">Czy wtyczka działa z dużymi sklepami?</h4>
+                        <p style="color: #646970; line-height: 1.6; margin: 0;">Tak! Wtyczka używa batch processing (500 rekordów/iteracja) i przetwarzania w tle przez WP Cron. Nawet dla miliona zamówień nie będzie timeout'ów.</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 25px;">
+                        <h4 style="color: #2271b1; margin-bottom: 8px;">Jak często generowane są zaplanowane raporty?</h4>
+                        <p style="color: #646970; line-height: 1.6; margin: 0;">WP Cron sprawdza harmonogramy co godzinę. Jeśli nadszedł czas (next_run_date), automatycznie tworzy eksport. Możesz ustawić datę i dokładną godzinę rozpoczęcia.</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 25px;">
+                        <h4 style="color: #2271b1; margin-bottom: 8px;">Co to są virtual fields w szablonach?</h4>
+                        <p style="color: #646970; line-height: 1.6; margin: 0;">Wtyczka automatycznie "rozpakuje" pola serialized (np. _additional_terms) na osobne pola. Dzięki temu możesz wybrać dokładnie "zgoda_marketingowa" zamiast całego serialized array. W CSV otrzymasz czytelne wartości "tak"/"nie".</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 25px;">
+                        <h4 style="color: #2271b1; margin-bottom: 8px;">Gdzie są zapisywane pliki CSV?</h4>
+                        <p style="color: #646970; line-height: 1.6; margin: 0;">W katalogu <code>/wp-content/uploads/woo-exporter/</code>. Pliki są chronione .htaccess (deny from all). Dostęp tylko przez bezpieczny link z hashem, który wygasa po 7 dniach.</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 25px;">
+                        <h4 style="color: #2271b1; margin-bottom: 8px;">Jak testować harmonogramy bez czekania godziny?</h4>
+                        <p style="color: #646970; line-height: 1.6; margin: 0;">Przejdź do zakładki "Historia Eksportów" i kliknij przycisk "Uruchom Cron Ręcznie". To natychmiast przetworzy wszystkie pending joby i sprawdzi harmonogramy.</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 25px;">
+                        <h4 style="color: #2271b1; margin-bottom: 8px;">Czy mogę wysłać raport na wiele adresów email?</h4>
+                        <p style="color: #646970; line-height: 1.6; margin: 0;">Tak! W polu "Email do powiadomienia" wpisz adresy oddzielone przecinkami: email1@test.pl, email2@firma.pl. Raport otrzymają wszyscy odbiorcy.</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 25px;">
+                        <h4 style="color: #2271b1; margin-bottom: 8px;">Co zrobić jeśli eksport nie generuje się?</h4>
+                        <p style="color: #646970; line-height: 1.6; margin: 0;">1) Włącz WP_DEBUG w wp-config.php 2) Sprawdź /wp-content/debug.log - szukaj "WOO_EXPORTER" 3) Użyj przycisku "Uruchom Cron Ręcznie" 4) Sprawdź czy WP Cron działa (niektóre hostingi wymagają systemowego cron)</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 25px;">
+                        <h4 style="color: #2271b1; margin-bottom: 8px;">Czy wtyczka jest responsywna?</h4>
+                        <p style="color: #646970; line-height: 1.6; margin: 0;">Tak! Pełny RWD - desktop, tablet, mobile. Tabele mają horizontal scroll z gradient indicator i animowaną strzałką. Wszystkie formularze i modale dostosowują się do ekranu.</p>
+                    </div>
+                    
+                    <div>
+                        <h4 style="color: #2271b1; margin-bottom: 8px;">Jak zaktualizować wtyczkę?</h4>
+                        <p style="color: #646970; line-height: 1.6; margin: 0;">Dezaktywuj starą wersję, usuń, zainstaluj nową z ZIP. Auto-migracja bazy zaktualizuje schemat automatycznie przy plugins_loaded. Dane (eksporty, harmonogramy, szablony) zostaną zachowane.</p>
                     </div>
                 </div>
 
