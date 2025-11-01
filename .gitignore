@@ -5,6 +5,11 @@ composer.lock
 # Generated exports
 /uploads/
 
+# Build artifacts
+/build/
+/dist/
+*.zip
+
 # IDE
 .idea/
 .vscode/
